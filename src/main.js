@@ -244,7 +244,8 @@ function shareText() {
     `Top of the World · Climb #${number}`,
     answers.map((a) => TIER_EMOJI[tier(a.points)]).join(''),
     `${points}/${MAX_TOTAL} · ${reached?.emoji ?? START_EMOJI} ${altitude(points)}${reached ? ` · ${reached.name}` : ''}`,
-    location.origin + location.pathname,
+    // Bare domain, no https://: iMessage splits full URLs into a separate link-preview bubble.
+    (location.host + location.pathname).replace(/^www\./, '').replace(/\/$/, ''),
   ].join('\n');
 }
 
