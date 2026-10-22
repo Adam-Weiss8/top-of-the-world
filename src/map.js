@@ -188,6 +188,7 @@ export function createMap(container, { onPick }) {
   let revealed = [];
   let markers = [];
   let glowFrame = 0;
+  let revealFocus = null; // bounds framed by the current reveal
 
   const pinEl = document.createElement('div');
   pinEl.className = 'pin';
@@ -259,6 +260,7 @@ export function createMap(container, { onPick }) {
     markers.forEach((m) => m.remove());
     markers = [];
     revealed = [];
+    revealFocus = null;
   }
 
   function select(code) {
@@ -330,8 +332,12 @@ export function createMap(container, { onPick }) {
 
       // Frame the top 10 and the pick; if that spans most of the globe, show the whole world.
       const focus = boundsOf(ranking.filter((r) => r.rank <= 10).map((r) => r.code).concat(pickedCode ?? []));
-      const wide = focus[1][0] - focus[0][0] > 150;
-      frame(wide ? WORLD : focus, { top: 30, right: 30, bottom: 30, left: 30, ...addTo(padding, 20) });
+      revealFocus = focus[1][0] - focus[0][0] > 150 ? WORLD : focus;
+      this.refit(padding);
+    },
+    /** Re-frame the current reveal after the panel covering the map changes size. */
+    refit(padding = {}) {
+      if (revealFocus) frame(revealFocus, { top: 30, right: 30, bottom: 30, left: 30, ...addTo(padding, 20) });
     },
     /** Stop accepting picks (e.g. while the journey scene plays). */
     lock() {

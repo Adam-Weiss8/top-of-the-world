@@ -761,6 +761,10 @@ h3 {
   animation: rise 0.35s ease-out;
 }
 
+.sheet-handle {
+  display: none;
+}
+
 @media (max-width: 720px) {
   .recap {
     left: 0;
@@ -768,10 +772,40 @@ h3 {
     top: auto;
     bottom: 0;
     width: auto;
-    height: 64%;
+    height: 60%;
+    transition: height 0.32s cubic-bezier(0.2, 0.8, 0.2, 1);
     border-width: 2px 0 0;
-    border-radius: 0;
+    border-radius: 14px 14px 0 0;
     box-shadow: 0 -4px 0 rgba(34, 49, 63, 0.12);
+  }
+  .recap.dragging {
+    transition: none;
+  }
+  .recap[data-sheet='expanded'] {
+    border-radius: 0;
+  }
+  .sheet-handle {
+    display: flex;
+    justify-content: center;
+    flex: none;
+    padding: 9px 0 3px;
+    cursor: grab;
+    touch-action: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .sheet-handle span {
+    width: 46px;
+    height: 5px;
+    border-radius: 3px;
+    background: var(--line);
+  }
+  .recap.dragging .sheet-handle span {
+    background: var(--ink);
+  }
+  .recap .recap-head {
+    padding-top: 4px;
+    touch-action: none; /* the header drags the sheet too */
+    user-select: none;
   }
 }
 

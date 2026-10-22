@@ -192,6 +192,7 @@ function showRecap() {
     .join('');
   renderStatus();
   tickCountdown();
+  setSheet('middle', { refit: false });
   showTab(recapTab);
 }
 
@@ -217,17 +218,102 @@ function showTab(i) {
   $('source').textContent = `Source: ${q.source}`;
   $('recap').querySelector('.recap-body').scrollTop = 0;
 
-  // Keep the peaks visible beside (desktop) or above (mobile) the recap panel.
-  const panel = $('recap').getBoundingClientRect();
-  const stage = $('map').getBoundingClientRect();
-  const sideways = panel.top - stage.top < 40;
-  map.reveal(ranking, a.code, sideways ? { right: stage.right - panel.left } : { bottom: stage.bottom - panel.top });
+  map.reveal(ranking, a.code, mapPadding());
 }
 
 $('tabs').addEventListener('click', (e) => {
   const tab = e.target.closest('.tab');
   if (tab) showTab(Number(tab.dataset.i));
 });
+
+// ---------- recap sheet (phones) ----------
+// On phones the recap is a bottom sheet that snaps between collapsed (map almost
+// fullscreen), middle, and expanded (recap fullscreen). Drag or flick the handle/header,
+// or tap the handle to cycle. On wider screens it stays a side panel.
+
+const phone = matchMedia('(max-width: 720px)');
+const SHEET_ORDER = ['collapsed', 'middle', 'expanded'];
+let sheet = 'middle';
+
+function sheetPx(state) {
+  const stageHeight = $('map').clientHeight;
+  if (state === 'expanded') return stageHeight;
+  if (state === 'middle') return Math.round(stageHeight * 0.6);
+  // Collapsed: just the handle, the date line and the result title.
+  return $('recap').querySelector('.recap-score').offsetTop + 2;
+}
+
+/** Map padding for the space the recap covers (at its resting size, not mid-animation). */
+function mapPadding() {
+  if (phone.matches) return { bottom: sheet === 'expanded' ? 0 : sheetPx(sheet) };
+  const panel = $('recap').getBoundingClientRect();
+  return { right: $('map').getBoundingClientRect().right - panel.left };
+}
+
+function setSheet(state, { refit = true } = {}) {
+  const recap = $('recap');
+  if (!phone.matches) {
+    recap.style.height = '';
+    delete recap.dataset.sheet;
+    return;
+  }
+  sheet = state;
+  recap.dataset.sheet = state;
+  recap.style.height = `${sheetPx(state)}px`;
+  if (refit && state !== 'expanded') map.refit(mapPadding());
+}
+
+const nextSheet = { collapsed: 'middle', middle: 'expanded', expanded: 'collapsed' };
+let drag = null;
+
+$('recap').addEventListener('pointerdown', (e) => {
+  if (!phone.matches || !e.target.closest('.sheet-handle, .recap-head') || e.target.closest('button')) return;
+  const now = performance.now();
+  drag = { startY: e.clientY, startH: $('recap').offsetHeight, lastY: e.clientY, lastT: now, v: 0, moved: 0 };
+  $('recap').classList.add('dragging');
+  $('recap').setPointerCapture(e.pointerId);
+});
+
+$('recap').addEventListener('pointermove', (e) => {
+  if (!drag) return;
+  const now = performance.now();
+  const h = Math.max(sheetPx('collapsed'), Math.min(sheetPx('expanded'), drag.startH + drag.startY - e.clientY));
+  $('recap').style.height = `${h}px`;
+  drag.v = (drag.lastY - e.clientY) / Math.max(1, now - drag.lastT); // px/ms, positive = upward
+  drag.lastY = e.clientY;
+  drag.lastT = now;
+  drag.moved = Math.max(drag.moved, Math.abs(e.clientY - drag.startY));
+});
+
+function endDrag() {
+  if (!drag) return;
+  const { moved, v } = drag;
+  drag = null;
+  const recap = $('recap');
+  recap.classList.remove('dragging');
+  if (moved < 6) return setSheet(nextSheet[sheet]); // a tap cycles
+  const h = recap.offsetHeight;
+  const sizes = SHEET_ORDER.map((s) => [s, sheetPx(s)]);
+  let target;
+  if (Math.abs(v) > 0.5) {
+    // A flick goes to the next size in that direction.
+    target = v > 0 ? sizes.find(([, px]) => px > h + 1) : [...sizes].reverse().find(([, px]) => px < h - 1);
+  }
+  target ??= sizes.reduce((best, s) => (Math.abs(s[1] - h) < Math.abs(best[1] - h) ? s : best));
+  setSheet(target[0]);
+}
+$('recap').addEventListener('pointerup', endDrag);
+$('recap').addEventListener('pointercancel', endDrag);
+
+$('recap-handle').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' || e.key === ' ') {
+    e.preventDefault();
+    setSheet(nextSheet[sheet]);
+  }
+});
+
+phone.addEventListener('change', () => !$('recap').hidden && setSheet(sheet));
+window.addEventListener('resize', () => !$('recap').hidden && setSheet(sheet, { refit: false }));
 
 $('replay').addEventListener('click', () => {
   $('recap').hidden = true;
