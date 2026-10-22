@@ -34,6 +34,28 @@ const TRAIL = [
   [60, -10], [330, -70], [110, -150], [300, -230], [150, -310],
   [270, -390], [175, -470], [235, -540], [200, -600],
 ];
+// Trail geometry is computed here rather than with SVG getPointAtLength(): the scene is
+// built while hidden, and Safari throws when measuring shapes that aren't rendered.
+const TRAIL_SEGMENTS = TRAIL.slice(1).map((b, i) => {
+  const a = TRAIL[i];
+  return { a, b, length: Math.hypot(b[0] - a[0], b[1] - a[1]) };
+});
+const TRAIL_LENGTH = TRAIL_SEGMENTS.reduce((sum, s) => sum + s.length, 0);
+
+/** Point `distance` units along the mountain trail. */
+function trailPoint(distance) {
+  let left = Math.max(0, distance);
+  for (const { a, b, length } of TRAIL_SEGMENTS) {
+    if (left <= length) {
+      const t = left / length;
+      return { x: a[0] + (b[0] - a[0]) * t, y: a[1] + (b[1] - a[1]) * t };
+    }
+    left -= length;
+  }
+  const [x, y] = TRAIL.at(-1);
+  return { x, y };
+}
+
 const BALLOON_X = 236;
 const ROCKET_X = 316;
 const MOON = { cx: 60, cy: -2840, r: 160 }; // its top sits at Y(1000)
@@ -253,7 +275,6 @@ export function createJourney(container, { mode = 'play' } = {}) {
   const svg = container.querySelector('svg');
   const $ = (sel) => svg.querySelector(sel);
   const world = $('.world');
-  const trailLine = $('.trail');
   const trailDone = $('.trail-done');
   const hiker = $('.hiker');
   const balloon = $('.balloon');
@@ -262,8 +283,7 @@ export function createJourney(container, { mode = 'play' } = {}) {
   const moonFlag = $('.moon-flag');
   const stars = $('.stars');
   const earth = $('.earth');
-  const trailLength = trailLine.getTotalLength();
-  trailDone.style.strokeDasharray = `${trailLength} ${trailLength}`;
+  trailDone.style.strokeDasharray = `${TRAIL_LENGTH} ${TRAIL_LENGTH}`;
 
   // The Moon gets the HUD's landing message rather than a label on the surface.
   const landmarkEls = LANDMARKS.filter((l) => l.points < MAX_TOTAL).map((l) => {
@@ -331,11 +351,11 @@ export function createJourney(container, { mode = 'play' } = {}) {
   }
 
   function hikerOnTrail(p) {
-    const at = clamp(p / 200) * trailLength;
-    const pt = trailLine.getPointAtLength(at);
-    const ahead = trailLine.getPointAtLength(Math.min(trailLength, at + 1));
+    const at = clamp(p / 200) * TRAIL_LENGTH;
+    const pt = trailPoint(at);
+    const ahead = trailPoint(Math.min(TRAIL_LENGTH, at + 1));
     put(hiker, pt.x, pt.y, `scale(${ahead.x < pt.x ? -1 : 1} 1)`);
-    trailDone.style.strokeDashoffset = String(trailLength - at);
+    trailDone.style.strokeDashoffset = String(TRAIL_LENGTH - at);
     return pt.y;
   }
 
