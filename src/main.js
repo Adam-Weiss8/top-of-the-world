@@ -244,9 +244,19 @@ function shareText() {
     `Top of the World · Climb #${number}`,
     answers.map((a) => TIER_EMOJI[tier(a.points)]).join(''),
     `${points}/${MAX_TOTAL} · ${reached?.emoji ?? START_EMOJI} ${altitude(points)}${reached ? ` · ${reached.name}` : ''}`,
-    // Bare domain, no https://: iMessage splits full URLs into a separate link-preview bubble.
-    (location.host + location.pathname).replace(/^www\./, '').replace(/\/$/, ''),
+    shareLink(),
   ].join('\n');
+}
+
+/**
+ * The link line for shared results. No https://, because iMessage splits full URLs into a
+ * separate preview bubble; but a bare "topoftheworld.fun" isn't recognised as a link (.fun
+ * isn't a TLD it knows), whereas a www. prefix always is. www redirects to the bare domain.
+ */
+function shareLink() {
+  const host = location.host.replace(/^www\./, '');
+  const path = location.pathname.replace(/\/$/, '');
+  return host === 'topoftheworld.fun' ? `www.${host}${path}` : `${host}${path}`;
 }
 
 async function share() {
