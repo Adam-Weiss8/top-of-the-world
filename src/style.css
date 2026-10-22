@@ -416,6 +416,221 @@ h3 {
   to { transform: none; opacity: 1; }
 }
 
+/* ---------- question reveal ---------- */
+/* The map starts dimmed and brightens as the question finishes appearing (--reveal-ms). */
+
+.stage.question-intro::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background: rgba(20, 30, 42, 0.38);
+  animation: lift-dim var(--reveal-ms, 1s) ease-in forwards;
+}
+@keyframes lift-dim {
+  to { opacity: 0; }
+}
+.question-card.revealing .eyebrow {
+  animation: fade-up 0.4s ease-out both;
+}
+.question-card.revealing .lead {
+  animation: fade-up 0.4s 0.3s ease-out both;
+}
+.question-card.revealing .word {
+  display: inline-block;
+  animation: word-in 0.45s calc(0.6s + var(--i) * 0.09s) ease-out both;
+}
+.pick-bar.revealing {
+  animation: fade-up 0.4s var(--reveal-ms, 1s) ease-out both;
+}
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(8px); }
+}
+@keyframes word-in {
+  from { opacity: 0; transform: translateY(0.35em); filter: blur(6px); }
+}
+
+/* ---------- score reveal ---------- */
+
+.score-reveal {
+  position: absolute;
+  inset: 0;
+  z-index: 7;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 6vh 16px 0;
+  background: radial-gradient(ellipse at 50% 62%, transparent 22%, rgba(14, 22, 32, 0.55) 100%);
+  animation: fade-in 0.3s ease-out;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.score-reveal.leaving {
+  opacity: 0;
+  transition: opacity 0.25s;
+}
+.sr-content {
+  position: relative;
+  text-align: center;
+}
+.sr-country {
+  margin: 0;
+  font: 900 2.5rem/1 var(--display);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  color: #fff;
+  -webkit-text-stroke: 1.5px var(--ink);
+  paint-order: stroke fill;
+  text-shadow: 3px 3px 0 var(--ink);
+  animation: fade-up 0.4s ease-out both;
+}
+.sr-drumroll {
+  display: none;
+  margin: 10px 0 0;
+  font-size: 2rem;
+  line-height: 1;
+  color: #fff;
+  text-shadow: 2px 2px 0 var(--ink);
+}
+.drumroll .sr-drumroll {
+  display: block;
+}
+.sr-drumroll span {
+  display: inline-block;
+  margin: 0 4px;
+  animation: drum 0.6s ease-in-out infinite;
+}
+.sr-drumroll span:nth-child(2) { animation-delay: 0.12s; }
+.sr-drumroll span:nth-child(3) { animation-delay: 0.24s; }
+@keyframes drum {
+  50% { transform: translateY(-10px); opacity: 0.5; }
+}
+
+.sr-points {
+  position: relative;
+  z-index: 1;
+  margin: 6px 0 0;
+  min-height: 1em;
+  font: 900 5.6rem/1 var(--display);
+  font-variant-numeric: tabular-nums;
+  color: var(--glow-color);
+  -webkit-text-stroke: 2px var(--ink);
+  paint-order: stroke fill;
+  text-shadow: 4px 4px 0 var(--ink);
+}
+.slammed .sr-points {
+  text-shadow: 4px 4px 0 var(--ink), 0 0 calc(var(--glow) * 28px) var(--glow-color),
+    0 0 calc(var(--glow) * 80px) var(--glow-color);
+  animation: slam 0.5s cubic-bezier(0.2, 1.6, 0.4, 1) both, glow-pulse 1.2s 0.5s ease-in-out infinite alternate;
+}
+.grey.slammed .sr-points {
+  animation: thud 0.45s ease-out both;
+}
+@keyframes slam {
+  from { transform: scale(2.3); opacity: 0.4; }
+}
+@keyframes thud {
+  from { transform: translateY(-24px); opacity: 0; }
+}
+@keyframes glow-pulse {
+  to { filter: brightness(1.18); }
+}
+.sr-label {
+  position: relative;
+  z-index: 1;
+  margin: 8px 0 0;
+  min-height: 1em;
+  font: 900 1.7rem/1 var(--display);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #fff;
+  -webkit-text-stroke: 1px var(--ink);
+  paint-order: stroke fill;
+  text-shadow: 2px 2px 0 var(--ink), 0 0 calc(var(--glow) * 20px) var(--glow-color);
+}
+.slammed .sr-label {
+  animation: fade-up 0.35s 0.15s ease-out both;
+}
+
+/* a soft halo behind the number, sized by how close the answer was */
+.sr-content::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 60%;
+  width: 340px;
+  height: 340px;
+  translate: -50% -50%;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--glow-color), transparent 65%);
+  opacity: 0;
+  pointer-events: none;
+}
+.slammed .sr-content::before {
+  opacity: calc(var(--glow) * 0.55);
+  transition: opacity 0.3s;
+}
+
+/* #1 only: slowly turning light rays */
+.sr-rays {
+  position: absolute;
+  left: 50%;
+  top: 60%;
+  width: 560px;
+  height: 560px;
+  translate: -50% -50%;
+  border-radius: 50%;
+  background: repeating-conic-gradient(rgba(246, 194, 27, 0.45) 0deg 8deg, transparent 8deg 24deg);
+  -webkit-mask: radial-gradient(circle, #000 18%, transparent 68%);
+  mask: radial-gradient(circle, #000 18%, transparent 68%);
+  opacity: 0;
+  pointer-events: none;
+}
+.gold.slammed .sr-rays {
+  opacity: 1;
+  transition: opacity 0.4s;
+  animation: spin 9s linear infinite;
+}
+@keyframes spin {
+  to { rotate: 360deg; }
+}
+
+.sr-sparkles span {
+  position: absolute;
+  left: 50%;
+  top: 60%;
+  z-index: 2;
+  font-size: 1.3rem;
+  color: #fff;
+  -webkit-text-stroke: 1px var(--glow-color);
+  text-shadow: 0 0 10px var(--glow-color);
+  pointer-events: none;
+  animation: burst 1s var(--d) cubic-bezier(0.1, 0.8, 0.3, 1) both;
+}
+@keyframes burst {
+  from { transform: translate(-50%, -50%) scale(0.3); opacity: 1; }
+  70% { opacity: 1; }
+  to { transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(1.1) rotate(90deg); opacity: 0; }
+}
+
+/* screen shake, strength set per answer with --shake */
+.stage.shake {
+  animation: shake 0.55s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+@keyframes shake {
+  10%, 90% { translate: calc(var(--shake) * -0.2) 0; }
+  20%, 80% { translate: calc(var(--shake) * 0.45) calc(var(--shake) * -0.2); }
+  30%, 50%, 70% { translate: calc(var(--shake) * -1) calc(var(--shake) * 0.3); }
+  40%, 60% { translate: var(--shake) calc(var(--shake) * -0.3); }
+}
+
+@media (max-width: 720px) {
+  .sr-country { font-size: 1.9rem; }
+  .sr-points { font-size: 4.4rem; }
+  .sr-label { font-size: 1.35rem; }
+}
+
 /* ---------- journey (full-screen climb) ---------- */
 
 .journey-screen {

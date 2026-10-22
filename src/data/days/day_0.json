@@ -1,5 +1,6 @@
 {
   "day": 0,
+  "author": "A. Weiss",
   "questions": [
     {
       "level": 1,
@@ -60,7 +61,7 @@
       "prompt": "with the highest mountain",
       "source": "National high points",
       "ranking": [
-        ["NPL","Everest, 8,849 m",1],
+        ["NPL","Everest, 8,849 m"],
         ["CHN","Everest, 8,849 m",1],
         ["PAK","K2, 8,611 m"],
         ["IND","Kangchenjunga, 8,586 m"],

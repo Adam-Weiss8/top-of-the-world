@@ -47,6 +47,18 @@
         <button class="sign" id="confirm" disabled>Confirm</button>
       </section>
 
+      <!-- After confirming: a beat of suspense, then the points slam in -->
+      <section class="score-reveal" id="score-reveal" hidden>
+        <div class="sr-content">
+          <div class="sr-rays" aria-hidden="true"></div>
+          <p class="sr-country" id="sr-country"></p>
+          <p class="sr-drumroll" aria-hidden="true"><span>•</span><span>•</span><span>•</span></p>
+          <p class="sr-points" id="sr-points"></p>
+          <p class="sr-label" id="sr-label"></p>
+          <div class="sr-sparkles" id="sr-sparkles" aria-hidden="true"></div>
+        </div>
+      </section>
+
       <!-- After each answer: the journey takes over the screen -->
       <section class="journey-screen" id="journey-screen" hidden>
         <div class="journey-view" id="journey"></div>

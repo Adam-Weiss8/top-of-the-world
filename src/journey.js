@@ -359,7 +359,14 @@ export function createJourney(container, { mode = 'play' } = {}) {
     return pt.y;
   }
 
-  const balloonX = (p) => BALLOON_X + 8 * Math.sin((p - 200) / 28);
+  // Lazy S-curves rather than a straight line up: two sine waves of different lengths, and a
+  // tilt that leans into the direction of travel (dx per point against K units of height).
+  const balloonX = (p) => BALLOON_X + 22 * Math.sin((p - 200) / 40) + 6 * Math.sin((p - 200) / 11);
+  const balloonDx = (p) => (22 / 40) * Math.cos((p - 200) / 40) + (6 / 11) * Math.cos((p - 200) / 11);
+  const balloonTilt = (p) => `rotate(${((Math.atan(balloonDx(p) / K) * 180) / Math.PI * 0.6).toFixed(1)})`;
+  const rocketX = (p) => ROCKET_X + 18 * Math.sin((p - 400) / 55) + 5 * Math.sin((p - 400) / 17);
+  const rocketDx = (p) => (18 / 55) * Math.cos((p - 400) / 55) + (5 / 17) * Math.cos((p - 400) / 17);
+  const rocketTilt = (p) => `rotate(${((Math.atan(rocketDx(p) / K) * 180) / Math.PI).toFixed(1)})`;
 
   // The route continues past the summit: a dotted line behind the balloon, a zig-zag
   // smoke trail behind the rocket through the atmosphere, then sparkling stars in space.
@@ -380,8 +387,8 @@ export function createJourney(container, { mode = 'play' } = {}) {
     const zig = [];
     if (p > 400) {
       const end = Math.min(p, SPACE);
-      for (let q = 400, i = 0; q <= end; q += 3, i++) zig.push([ROCKET_X + (i % 2 ? 8 : -8), Y(q) + 2]);
-      if (p <= SPACE) zig.push([ROCKET_X, Y(p) + 4]);
+      for (let q = 400, i = 0; q <= end; q += 3, i++) zig.push([rocketX(q) + (i % 2 ? 8 : -8), Y(q) + 2]);
+      if (p <= SPACE) zig.push([rocketX(p), Y(p) + 4]);
     }
     smoke.setAttribute('d', zig.length ? 'M' + zig.map(([x, y]) => `${x.toFixed(1)},${y.toFixed(1)}`).join(' L') : '');
 
@@ -390,7 +397,7 @@ export function createJourney(container, { mode = 'play' } = {}) {
       starsDrawn = count;
       starTrail.innerHTML = Array.from({ length: count }, (_, i) => {
         const q = SPACE + 9 * (i + 1);
-        const x = ROCKET_X + (i % 2 ? 11 : -11);
+        const x = rocketX(q) + (i % 2 ? 11 : -11);
         const r = 3 + (i % 3);
         // Position on a wrapper so the twinkle's rotation spins each star in place.
         return `<g transform="translate(${x} ${Y(q) + 20})"><path class="trail-star" style="animation-delay:${((i % 5) * 0.3).toFixed(1)}s"
@@ -417,8 +424,8 @@ export function createJourney(container, { mode = 'play' } = {}) {
     if (who === 'hiker') y = hikerOnTrail(p);
     else {
       trailDone.style.strokeDashoffset = '0';
-      if (who === 'balloon') put(balloon, balloonX(p), (y = Y(p)));
-      if (who === 'rocket') put(rocket, ROCKET_X, (y = Y(p)));
+      if (who === 'balloon') put(balloon, balloonX(p), (y = Y(p)), balloonTilt(p));
+      if (who === 'rocket') put(rocket, rocketX(p), (y = Y(p)), rocketTilt(p));
       if (who === 'astronaut') {
         put(rocket, LANDING_X, moonSurface(LANDING_X));
         put(astronaut, ASTRO_X, moonSurface(ASTRO_X));
@@ -485,7 +492,7 @@ export function createJourney(container, { mode = 'play' } = {}) {
       const b = Math.min(to, 400);
       climb(a, b, (t) => {
         const q = lerp(a, b, ramp(t));
-        put(balloon, balloonX(q), Y(q));
+        put(balloon, balloonX(q), Y(q), balloonTilt(q));
         skyTrail(q);
         camera(Y(q));
         sky(q);
@@ -535,7 +542,7 @@ export function createJourney(container, { mode = 'play' } = {}) {
       climb(a, b, (t) => {
         rocket.classList.toggle('burning', t < 1 || to >= MAX_TOTAL);
         const q = lerp(a, b, ramp(t));
-        put(rocket, ROCKET_X, Y(q));
+        put(rocket, rocketX(q), Y(q), rocketTilt(q));
         skyTrail(q);
         camera(Y(q));
         sky(q);
@@ -546,7 +553,7 @@ export function createJourney(container, { mode = 'play' } = {}) {
     }
     // Moon landing: arc over the top, touch down, hop out, plant the flag.
     if (to >= MAX_TOTAL && from < MAX_TOTAL) {
-      const start = [ROCKET_X, Y(Math.max(p, 985))];
+      const start = [rocketX(Math.max(p, 985)), Y(Math.max(p, 985))];
       const c1 = [ROCKET_X + 10, Y(1000) - 150];
       const c2 = [LANDING_X + 40, Y(1000) - 170];
       const end = [LANDING_X, moonSurface(LANDING_X)];

@@ -142,6 +142,14 @@ export function createMap(container, { onPick }) {
           paint: { 'line-color': COLORS.gold, 'line-width': 8, 'line-blur': 6, 'line-opacity': 0.9 },
         },
         {
+          // The score reveal: a pulsing halo around the player's pick, in their tier colour.
+          id: 'pick-glow',
+          type: 'line',
+          source: SOURCE,
+          filter: ['==', ['get', 'code'], '__none__'],
+          paint: { 'line-color': '#ffffff', 'line-width': 0, 'line-blur': 8, 'line-opacity': 0.9 },
+        },
+        {
           id: 'country-picked-outline',
           type: 'line',
           source: SOURCE,
@@ -189,6 +197,7 @@ export function createMap(container, { onPick }) {
   let markers = [];
   let glowFrame = 0;
   let revealFocus = null; // bounds framed by the current reveal
+  let spotFrame = 0;
 
   const pinEl = document.createElement('div');
   pinEl.className = 'pin';
@@ -307,6 +316,7 @@ export function createMap(container, { onPick }) {
      * picks. `padding` is the screen space covered by panels, so the answers stay in view.
      */
     reveal(ranking, pickedCode, padding = {}) {
+      this.clearSpotlight();
       enabled = false;
       setState(hovered, { hover: false });
       map.getCanvas().style.cursor = '';
@@ -345,8 +355,41 @@ export function createMap(container, { onPick }) {
       setState(hovered, { hover: false });
       hovered = null;
     },
+    /** Accept picks again (after a question finishes revealing). */
+    unlock() {
+      enabled = true;
+    },
+    /**
+     * Glide to the player's pick and ring it with a pulsing glow. `strength` (0–1) scales
+     * the halo with how close the answer was; 0 means no glow at all.
+     */
+    spotlight(code, { color, strength }) {
+      cancelAnimationFrame(spotFrame);
+      pin.remove();
+      const box = byCode[code] && boundsOf([code]);
+      if (box) frame(box, { top: 160, right: 60, bottom: 120, left: 60 }, isTiny.has(code) ? 4.5 : 3.5);
+      if (!strength) return;
+      map.setFilter('pick-glow', ['==', ['get', 'code'], code]);
+      map.setPaintProperty('pick-glow', 'line-color', color);
+      if (matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        map.setPaintProperty('pick-glow', 'line-width', 4 + 14 * strength);
+        return;
+      }
+      const start = performance.now();
+      const step = (now) => {
+        const t = (Math.sin(((now - start) / 700) * Math.PI) + 1) / 2;
+        map.setPaintProperty('pick-glow', 'line-width', (4 + 14 * strength) * (0.6 + 0.4 * t));
+        spotFrame = requestAnimationFrame(step);
+      };
+      spotFrame = requestAnimationFrame(step);
+    },
+    clearSpotlight() {
+      cancelAnimationFrame(spotFrame);
+      map.setFilter('pick-glow', ['==', ['get', 'code'], '__none__']);
+    },
     /** Clear any reveal and the pick for the next question. */
     reset() {
+      this.clearSpotlight();
       clearReveal();
       select(null);
       pin.remove();

@@ -81,34 +81,146 @@ function renderStatus(points = total()) {
 
 // ---------- question ----------
 
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+const reducedMotion = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+const restartAnimation = (el, cls) => {
+  el.classList.remove(cls);
+  void el.offsetWidth;
+  el.classList.add(cls);
+};
+
+let unlockTimer;
+
+/**
+ * Show the next question with a little ceremony: the map dims, the card's lines fade in,
+ * the prompt arrives word by word, then the pick bar. Picking unlocks once it's all read.
+ */
 function showQuestion() {
   const i = answers.length;
   current = null;
   map.reset();
+  map.lock();
+  const words = questions[i].prompt.split(/\s+/);
   $('question-number').textContent = `Question ${i + 1} of ${QUESTIONS_PER_DAY}`;
-  $('question-text').textContent = questions[i].prompt;
+  $('question-text').innerHTML = words.map((w, k) => `<span class="word" style="--i:${k}">${esc(w)}</span>`).join(' ');
   $('pick-label').textContent = 'Tap a country to plant your flag';
   $('confirm').disabled = true;
   $('question-card').hidden = false;
   $('pick-bar').hidden = false;
   $('journey-screen').hidden = true;
   renderStatus();
+
+  const revealMs = reducedMotion() ? 0 : 900 + words.length * 90;
+  const stage = document.querySelector('.stage');
+  stage.style.setProperty('--reveal-ms', `${revealMs}ms`);
+  restartAnimation($('question-card'), 'revealing');
+  restartAnimation($('pick-bar'), 'revealing');
+  restartAnimation(stage, 'question-intro');
+  clearTimeout(unlockTimer);
+  unlockTimer = setTimeout(() => map.unlock(), revealMs);
 }
 
-function confirmPick() {
-  if (!current) return;
+async function confirmPick() {
+  if (!current || $('confirm').disabled) return;
+  $('confirm').disabled = true;
   const q = questions[answers.length];
-  const { points, rank } = score(q, current);
+  const code = current;
+  const { points, rank } = score(q, code);
   const before = total();
-  answers.push({ code: current, points, rank });
+  answers.push({ code, points, rank });
   save();
   map.lock();
   $('question-card').hidden = true;
   $('pick-bar').hidden = true;
   renderStatus(before);
+  await revealScore(code, points);
   playJourney(before, total(), {
     points,
     next: answers.length === QUESTIONS_PER_DAY ? 'See your recap' : 'Next question',
+  });
+}
+
+// ---------- score reveal ----------
+// Between confirming and the journey: the map glides to the pick, a drumroll, then the
+// points slam in. Shake, glow and sparkle all scale with how close the answer was.
+
+const REVEAL_FX = {
+  gold: { color: '#f6c21b', glow: 1, shake: 16, sparkles: 16, label: 'Perfect!' },
+  purple: { color: '#b48ef0', glow: 0.7, shake: 9, sparkles: 9, label: 'So close!' },
+  blue: { color: '#5cb2ff', glow: 0.45, shake: 4, sparkles: 4, label: 'Nice climb' },
+  green: { color: '#6ee7a0', glow: 0.25, shake: 1.5, sparkles: 0, label: 'On the list' },
+  grey: { color: '#b8c3c9', glow: 0, shake: 0, sparkles: 0, label: 'Off the list' },
+};
+const DRUMROLL_MS = 1400;
+const COUNT_MS = 450;
+const HOLD_MS = 1700;
+
+function revealScore(code, points) {
+  const t = tier(points);
+  const fx = REVEAL_FX[t];
+  const el = $('score-reveal');
+  const stage = document.querySelector('.stage');
+  map.spotlight(code, { color: fx.color, strength: fx.glow });
+
+  el.className = `score-reveal ${t} drumroll`;
+  el.style.setProperty('--glow-color', fx.color);
+  el.style.setProperty('--glow', fx.glow);
+  el.hidden = false;
+  $('sr-country').textContent = countryName(code);
+  $('sr-points').textContent = '';
+  $('sr-label').textContent = '';
+  $('sr-sparkles').innerHTML = '';
+
+  return new Promise((resolve) => {
+    const timers = [];
+    let stage2 = false;
+    let done = false;
+    const later = (ms, fn) => timers.push(setTimeout(fn, ms));
+
+    const finish = () => {
+      if (done) return;
+      done = true;
+      timers.forEach(clearTimeout);
+      el.removeEventListener('click', onTap);
+      el.classList.add('leaving');
+      setTimeout(() => {
+        el.hidden = true;
+        stage.classList.remove('shake');
+        resolve();
+      }, 250);
+    };
+
+    const slam = () => {
+      if (stage2) return;
+      stage2 = true;
+      timers.forEach(clearTimeout);
+      el.classList.remove('drumroll');
+      el.classList.add('counting');
+      const start = performance.now();
+      const count = (now) => {
+        const k = reducedMotion() ? 1 : Math.min(1, (now - start) / COUNT_MS);
+        $('sr-points').textContent = `+${Math.round(points * k)}`;
+        if (k < 1) return requestAnimationFrame(count);
+        el.classList.add('slammed');
+        $('sr-label').textContent = fx.label;
+        $('sr-sparkles').innerHTML = Array.from({ length: fx.sparkles }, (_, k) => {
+          const angle = (k / fx.sparkles) * Math.PI * 2 + Math.random() * 0.4;
+          const dist = 90 + Math.random() * 90;
+          return `<span style="--dx:${(Math.cos(angle) * dist).toFixed(0)}px;--dy:${(Math.sin(angle) * dist).toFixed(0)}px;--d:${(Math.random() * 0.15).toFixed(2)}s">✦</span>`;
+        }).join('');
+        if (fx.shake && !reducedMotion()) {
+          stage.style.setProperty('--shake', `${fx.shake}px`);
+          restartAnimation(stage, 'shake');
+        }
+        later(HOLD_MS, finish);
+      };
+      requestAnimationFrame(count);
+    };
+
+    // Tap to hurry: during the drumroll it jumps to the slam; after it, it moves on.
+    const onTap = () => (stage2 ? finish() : slam());
+    el.addEventListener('click', onTap);
+    later(reducedMotion() ? 200 : DRUMROLL_MS, slam);
   });
 }
 
