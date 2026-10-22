@@ -5,7 +5,7 @@
 // Day 1 is LAUNCH. Earlier days (0, -1, …) are test days that join the archive.
 // Each day has 5 questions, levels 1–5 in order (Q1 easiest, Q5 hardest):
 //
-//   { "day": 4, "questions": [
+//   { "day": 4, "author": "Sam", "questions": [
 //       { "level": 1, "prompt": "with the highest population", "source": "UN WPP 2024",
 //         "ranking": [["IND", "1.45 billion"], ["CHN", "1.42 billion"], ["NPL", "8,849 m", 1], …] },
 //       … ] }
@@ -67,7 +67,9 @@ export function validateDay(day, codes) {
 
 /** Pretty JSON with each ranking entry on one line, so day files diff nicely. */
 export function formatDay(day) {
-  const lines = ['{', `  "day": ${day.day},`, '  "questions": ['];
+  const lines = ['{', `  "day": ${day.day},`];
+  if (day.author) lines.push(`  "author": ${JSON.stringify(day.author)},`);
+  lines.push('  "questions": [');
   day.questions.forEach((q, i) => {
     lines.push('    {');
     lines.push(`      "level": ${q.level},`);

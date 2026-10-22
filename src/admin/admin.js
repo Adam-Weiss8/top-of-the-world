@@ -3,7 +3,7 @@
 
 import './admin.css';
 import { dayDate, dayNumber, validateDay, QUESTIONS_PER_DAY, MIN_ANSWERS, MAX_ANSWERS } from '../queue.js';
-import { parseTable, matchCountry, COUNTRY_NAMES } from './match.js';
+import { parseTable, matchCountry, normalize, COUNTRY_NAMES } from './match.js';
 
 const $ = (id) => document.getElementById(id);
 const CODES = new Set(Object.keys(COUNTRY_NAMES));
@@ -19,14 +19,32 @@ const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<
 
 let days = new Map(); // saved days from disk
 let selected = null; // day number being edited
-let draft = null; // editable copy: { day, questions: [{ prompt, source, rows: [{ code, raw, value, tie }], note }] }
+let draft = null; // editable copy: { day, author, questions: [{ prompt, source, rows: [{ code, raw, value, tie }], note }] }
 let dirty = false;
+
+// Each person's name is remembered on their own computer and pre-filled on new days.
+const AUTHOR_KEY = 'totw-admin-author';
+const rememberedAuthor = () => {
+  try {
+    return localStorage.getItem(AUTHOR_KEY) ?? '';
+  } catch {
+    return '';
+  }
+};
+const rememberAuthor = (name) => {
+  try {
+    localStorage.setItem(AUTHOR_KEY, name);
+  } catch {
+    // Private mode: they'll just retype it.
+  }
+};
 
 // ---------- draft <-> file format ----------
 
 function toDraft(day, n) {
   return {
     day: n,
+    author: day ? (day.author ?? '') : rememberedAuthor(),
     questions: Array.from({ length: QUESTIONS_PER_DAY }, (_, i) => {
       const q = day?.questions?.[i];
       const ranks = (q?.ranking ?? []).map(([, , rank], j) => rank ?? j + 1);
@@ -50,6 +68,7 @@ const ranksOf = (rows) => rows.reduce((acc, r, i) => [...acc, r.tie && i > 0 ? a
 function fromDraft(d, { matchedOnly = false } = {}) {
   return {
     day: d.day,
+    ...(d.author.trim() ? { author: d.author.trim() } : {}),
     questions: d.questions.map((q, i) => {
       const rows = matchedOnly ? q.rows.filter((r) => r.code) : q.rows;
       const ranks = ranksOf(rows);
@@ -86,6 +105,7 @@ function renderSummary() {
 }
 
 function renderSidebar() {
+  if ($('search').value.trim()) return renderSearch();
   const nums = [...days.keys()];
   const max = Math.max(today, ...nums);
   const min = Math.min(today, ...nums);
@@ -94,7 +114,9 @@ function renderSidebar() {
     const label = { ready: '✓ ready', draft: '✎ draft', missing: '— empty' }[s];
     return `<button class="a-day ${s} ${n === selected ? 'selected' : ''} ${n === today ? 'today' : ''}" data-day="${n}">
       <span class="a-day-num">Day ${n}</span><span class="a-day-date">${fmtDate(n)}</span>
-      <span class="a-day-status">${n === today ? 'today · ' : ''}${label}</span></button>`;
+      <span class="a-day-status">${n === today ? 'today · ' : ''}${label}${
+        days.get(n)?.author ? ` · ${esc(days.get(n).author)}` : ''
+      }</span></button>`;
   };
   const upcoming = [];
   for (let n = today + 1; n <= max; n++) upcoming.push(item(n));
@@ -108,6 +130,54 @@ function renderSidebar() {
     <h2>Today</h2>${item(today)}
     <h2>Archive</h2>${archive.join('') || '<p class="a-empty">No past days.</p>'}`;
 }
+
+// ---------- search ----------
+// Finds saved questions whose prompt contains every typed word (accents and case ignored),
+// so whoever's writing can check an idea hasn't been done. Shows prompts, not answers.
+
+const escRegex = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+function renderSearch() {
+  const query = $('search').value.trim();
+  const terms = normalize(query).split(' ').filter(Boolean);
+  const results = [];
+  for (const day of [...days.values()].sort((a, b) => b.day - a.day)) {
+    day.questions.forEach((q, i) => {
+      if (!q.prompt) return;
+      const text = normalize(q.prompt);
+      if (terms.every((t) => text.includes(t))) results.push({ day, q, i });
+    });
+  }
+
+  // Highlight each typed word in the original prompt (case-insensitive).
+  const words = query.split(/\s+/).filter(Boolean).map(escRegex);
+  const highlight = (s) =>
+    words.length ? esc(s).replace(new RegExp(`(${words.join('|')})`, 'gi'), '<mark>$1</mark>') : esc(s);
+
+  const when = (n) => (n === today ? 'today' : n > today ? 'upcoming' : 'played');
+  $('days').innerHTML = `
+    <h2>${results.length} question${results.length === 1 ? '' : 's'} match</h2>
+    ${
+      results
+        .map(
+          ({ day, q, i }) => `
+      <button class="a-result" data-day="${day.day}">
+        <span class="a-result-q"><em>Click the country</em> ${highlight(q.prompt)}</span>
+        <span class="a-result-meta">Climb #${day.day} · ${fmtDate(day.day, { day: 'numeric', month: 'short', year: 'numeric' })} · Q${i + 1} (level ${i + 1})</span>
+        <span class="a-result-meta">${when(day.day)}${day.author ? ` · by ${esc(day.author)}` : ''}</span>
+      </button>`
+        )
+        .join('') || '<p class="a-empty">Nothing yet — looks like a fresh idea.</p>'
+    }`;
+}
+
+$('search').addEventListener('input', renderSidebar);
+$('search').addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    $('search').value = '';
+    renderSidebar();
+  }
+});
 
 // ---------- editor ----------
 
@@ -131,6 +201,9 @@ function renderEditor() {
         <p>${fmtDate(n, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
           ${n === today ? ' · <b>today</b>' : n < today ? ' · archive' : ''}
           · <span class="a-state ${s}">${{ ready: 'ready to play', draft: 'draft (not playable yet)', missing: 'not saved yet' }[s]}</span></p>
+        <label class="a-author">Questions by
+          <input id="author" value="${esc(draft.author)}" placeholder="Your name" maxlength="60" autocomplete="name" />
+        </label>
       </div>
       <div class="a-actions">
         ${days.has(n) ? '<button class="a-btn ghost" data-action="delete">Delete</button>' : ''}
@@ -157,10 +230,10 @@ function cardHTML(i) {
       </div>
     </header>
     <label class="a-field"><span>Prompt</span>
-      <div class="a-prompt"><em>Click the country</em><input class="prompt" value="${esc(q.prompt)}" placeholder="with the most active volcanoes" /></div>
+      <div class="a-prompt"><em>Click the country</em><input class="prompt" value="${esc(q.prompt)}" placeholder="e.g. with the most active volcanoes" /></div>
     </label>
     <label class="a-field"><span>Source</span>
-      <input class="source" value="${esc(q.source)}" placeholder="Smithsonian Global Volcanism Program, 2024" />
+      <input class="source" value="${esc(q.source)}" placeholder="e.g. Smithsonian Global Volcanism Program, 2024" />
     </label>
     <div class="a-paste">
       <textarea class="paste" rows="2" placeholder="Paste a ranked table here: rows from Wikipedia or a spreadsheet, or lines like '1. Japan — 111'. Country names are matched automatically; the next column becomes the value."></textarea>
@@ -256,6 +329,11 @@ const at = (e) => {
 };
 
 editor.addEventListener('input', (e) => {
+  if (e.target.id === 'author') {
+    draft.author = e.target.value;
+    rememberAuthor(e.target.value.trim());
+    return markDirty();
+  }
   const { i, j } = at(e);
   if (i === null) return;
   const q = draft.questions[i];

@@ -14,7 +14,8 @@ npm run check    # validate every queued day and report how far ahead the queue 
 ## Adding questions (the queue)
 
 1. Run `npm run dev` and open **http://localhost:5173/admin.html**. The admin page only exists on the dev server and is never deployed.
-2. The sidebar shows **Upcoming** days, **Today**, and the **Archive**. Click **+ Queue Day N** to start the next day.
+2. The sidebar shows **Upcoming** days, **Today**, and the **Archive**. Click **+ Queue Day N** to start the next day, and put your name in **Questions by**. The game shows "Today's questions by …" on the start screen and recap, and your name is remembered on your computer for next time.
+   - **Search past questions** (top of the sidebar) before writing one: type a word or two (e.g. `volcano`) to see every saved question containing them, with its climb number, date and Q1–Q5 slot. Click one to open that day. Run `git pull` first so you're searching everyone's latest days.
 3. Each day has five questions, Q1 (level 1, easiest) to Q5 (level 5, hardest). For each question:
    - Type the prompt. It reads as "Click the country …".
    - Type the source.

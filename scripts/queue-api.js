@@ -29,6 +29,7 @@ const readBody = (req) =>
 // shape and only real-looking codes, so the game can always load it safely.
 function checkShape(day, n) {
   if (day?.day !== n) return `day number should be ${n}`;
+  if (day.author !== undefined && (typeof day.author !== 'string' || day.author.length > 60)) return 'bad author name';
   if (!Array.isArray(day.questions) || day.questions.length !== QUESTIONS_PER_DAY) return 'needs 5 questions';
   for (const q of day.questions) {
     if (typeof q.prompt !== 'string' || typeof q.source !== 'string' || !Array.isArray(q.ranking)) return 'bad question';

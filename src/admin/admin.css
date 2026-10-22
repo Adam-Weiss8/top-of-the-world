@@ -89,7 +89,7 @@ button {
   flex: 1;
   min-height: 0;
   display: grid;
-  grid-template-columns: 250px 1fr;
+  grid-template-columns: 290px 1fr;
 }
 
 .a-days {
@@ -185,6 +185,75 @@ button {
   margin: 4px;
   color: var(--muted);
   font-size: 0.85rem;
+}
+
+/* search past questions */
+.a-search {
+  position: sticky;
+  top: -14px;
+  z-index: 1;
+  margin: -14px -12px 14px;
+  padding: 12px;
+  background: #e6ebe3;
+  border-bottom: 1.5px solid var(--line);
+}
+.a-search input {
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  padding: 7px 14px;
+}
+.a-result {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 100%;
+  margin-bottom: 6px;
+  padding: 8px 10px;
+  text-align: left;
+  background: var(--card);
+  border: 1.5px solid var(--line);
+  border-radius: 5px;
+  cursor: pointer;
+}
+.a-result:hover {
+  border-color: var(--ink);
+}
+.a-result-q {
+  font-weight: 600;
+  line-height: 1.3;
+}
+.a-result-q em {
+  font-style: normal;
+  font-weight: 400;
+  color: var(--muted);
+}
+.a-result mark {
+  background: #fde58a;
+  color: inherit;
+  border-radius: 2px;
+}
+.a-result-meta {
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+/* "Questions by" in the editor header */
+.a-author {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  font: 800 0.9rem/1 var(--display);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.a-author input {
+  width: 220px;
+  font: 600 0.95rem var(--body);
+  letter-spacing: 0;
+  text-transform: none;
+  padding: 5px 9px;
 }
 
 /* ---------- editor ---------- */

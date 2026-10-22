@@ -21,7 +21,12 @@
       <div class="a-summary" id="summary"></div>
     </header>
     <div class="a-layout">
-      <aside class="a-days" id="days"></aside>
+      <aside class="a-days">
+        <div class="a-search">
+          <input id="search" type="search" placeholder="Search past questions…" autocomplete="off" />
+        </div>
+        <div id="days"></div>
+      </aside>
       <main class="a-editor" id="editor"></main>
     </div>
     <datalist id="country-names"></datalist>

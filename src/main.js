@@ -7,7 +7,7 @@ import { dayDate } from './queue.js';
 import {
   todayKey,
   puzzleNumber,
-  questionsFor,
+  puzzleFor,
   score,
   tier,
   TIER_EMOJI,
@@ -21,7 +21,7 @@ const $ = (id) => document.getElementById(id);
 const preview = import.meta.env.DEV ? new URLSearchParams(location.search).get('day') : null;
 const key = preview !== null ? dayDate(Number(preview)) : todayKey();
 const number = puzzleNumber(key);
-const questions = questionsFor(key);
+const { questions, author } = puzzleFor(key);
 const storageKey = preview !== null ? null : `totw2:${key}`;
 const dateLabel = new Date(`${key}T12:00:00`).toLocaleDateString('en-GB', {
   day: 'numeric',
@@ -417,6 +417,10 @@ $('start').addEventListener('click', () => {
 });
 
 $('climb-label').textContent = `Climb #${number} · ${dateLabel}`;
+for (const id of ['intro-byline', 'recap-byline']) {
+  $(id).textContent = author ? `Today’s questions by ${author}` : '';
+  $(id).hidden = !author;
+}
 renderStatus();
 
 map.ready.then(() => {

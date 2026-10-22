@@ -25,13 +25,18 @@ function mulberry32(seed) {
 }
 
 /**
- * Today's five questions: the queued day if it's ready, otherwise a mix from the archive
- * (every playable earlier day) with one random question per difficulty level.
+ * Today's puzzle: { questions, author }. The queued day if it's ready, otherwise a mix from
+ * the archive (every playable earlier day) with one random question per difficulty level,
+ * which has no single author.
  */
-export function questionsFor(key) {
+export function puzzleFor(key) {
   const n = dayNumber(key);
   const queued = DAYS.get(n);
-  if (isPlayable(queued)) return queued.questions;
+  if (isPlayable(queued)) return { questions: queued.questions, author: queued.author?.trim() || null };
+  return { questions: archiveMix(n), author: null };
+}
+
+function archiveMix(n) {
 
   const playable = [...DAYS.values()].filter(isPlayable);
   const earlier = playable.filter((d) => d.day < n);
