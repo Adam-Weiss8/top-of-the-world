@@ -108,11 +108,18 @@ h3 {
   background: var(--sign);
   clip-path: polygon(0 0, calc(100% - 18px) 0, 100% 50%, calc(100% - 18px) 100%, 0 100%);
 }
-.sign:hover:not(:disabled) {
-  transform: translateX(3px);
+/* Only nudge on real hover: on touch screens :hover sticks after a tap and the sign jumps. */
+@media (hover: hover) {
+  .sign:hover:not(:disabled) {
+    transform: translateX(3px);
+  }
 }
 .sign:active:not(:disabled) {
   transform: translate(3px, 2px);
+}
+.sign {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 .sign:disabled {
   cursor: default;

@@ -250,15 +250,33 @@ function shareText() {
 
 async function share() {
   const text = shareText();
-  try {
-    if (navigator.share && matchMedia('(pointer: coarse)').matches) {
+  // Phones: the system share sheet. Closing it without sharing isn't an error.
+  if (navigator.share && matchMedia('(pointer: coarse)').matches) {
+    try {
       await navigator.share({ text });
       return;
+    } catch (e) {
+      if (e.name === 'AbortError') return;
     }
+  }
+  if (await copyText(text)) toast('Copied to clipboard');
+  else window.prompt('Copy your result:', text); // last resort: let them copy it by hand
+}
+
+/** Copy via the Clipboard API, falling back to the older execCommand route. */
+async function copyText(text) {
+  try {
     await navigator.clipboard.writeText(text);
-    toast('Copied to clipboard');
+    return true;
   } catch {
-    toast('Couldn’t share — try again');
+    const area = Object.assign(document.createElement('textarea'), { value: text, readOnly: true });
+    area.style.cssText = 'position:fixed;top:0;left:0;opacity:0;';
+    document.body.append(area);
+    area.select();
+    area.setSelectionRange(0, text.length);
+    const ok = document.execCommand?.('copy') ?? false;
+    area.remove();
+    return ok;
   }
 }
 
