@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Top of the World</title>
+    <meta name="description" content="A daily geography climb: find the country at the top of the list." />
+    <meta name="theme-color" content="#eef1ea" />
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><polygon points='2,28 16,4 30,28' fill='%235d707e'/><polygon points='16,4 11,13 14,15 16,12 19,15 21,13' fill='white'/><rect x='15' y='0' width='1.5' height='5' fill='%2322313f'/><polygon points='16.5,0 22,1.5 16.5,3' fill='%23d63a2f'/></svg>" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800;900&family=Work+Sans:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">
+        <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true">
+          <polygon points="2,28 16,4 30,28" fill="#5d707e" />
+          <polygon points="16,4 11,13 14,15 16,12 19,15 21,13" fill="#fff" />
+          <rect x="15" y="0" width="1.5" height="5" fill="#22313f" />
+          <polygon points="16.5,0 22,1.5 16.5,3" fill="#d63a2f" />
+        </svg>
+        <div>
+          <h1>Top of the World</h1>
+          <p class="brand-sub" id="climb-label"></p>
+        </div>
+      </div>
+      <div class="status">
+        <ol class="dots" id="dots" aria-label="Questions"></ol>
+        <span class="altitude-readout" id="altitude-readout" title="Altitude">0 m</span>
+      </div>
+    </header>
+
+    <main class="stage">
+      <div id="map" class="map"></div>
+
+      <section class="question-card" id="question-card" hidden>
+        <p class="eyebrow blaze" id="question-number"></p>
+        <h2><span class="lead">Click the country</span> <span id="question-text"></span></h2>
+      </section>
+
+      <section class="pick-bar" id="pick-bar" hidden>
+        <span class="pick-label" id="pick-label">Tap a country to plant your flag</span>
+        <button class="sign" id="confirm" disabled>Confirm</button>
+      </section>
+
+      <!-- After each answer: the journey takes over the screen -->
+      <section class="journey-screen" id="journey-screen" hidden>
+        <div class="journey-view" id="journey"></div>
+        <div class="hud">
+          <div class="hud-points" id="hud-points"></div>
+          <div class="hud-altitude" id="hud-altitude"></div>
+          <div class="hud-landmark" id="hud-landmark"></div>
+        </div>
+        <p class="skip-hint" id="skip-hint">Tap to skip</p>
+        <button class="sign hud-next" id="journey-next">Next question</button>
+      </section>
+
+      <section class="overlay" id="intro" hidden>
+        <div class="panel">
+          <p class="eyebrow blaze" id="intro-number"></p>
+          <h2 class="poster">Top of the<br />World</h2>
+          <div class="intro-scene" id="intro-scene"></div>
+          <p>Five questions. Each asks you to find the country at <strong>#1</strong> on a ranked list.</p>
+          <p class="rules"><span><b>#1</b> 200 pts</span><span><b>#2</b> 180</span><span>…</span><span>anywhere on the list scores</span></p>
+          <p>Every point carries you higher. How high can you go?</p>
+          <button class="sign wide" id="start">Start the climb</button>
+        </div>
+      </section>
+
+      <!-- End of the day: the recap -->
+      <section class="recap" id="recap" hidden>
+        <div class="recap-head">
+          <p class="eyebrow blaze" id="recap-number"></p>
+          <h2 class="poster" id="recap-title"></h2>
+          <div class="recap-score">
+            <span class="recap-points" id="recap-points"></span>
+            <span class="recap-altitude" id="recap-altitude"></span>
+          </div>
+          <div class="recap-actions">
+            <button class="sign" id="share">Share</button>
+            <button class="link-button" id="replay">Watch your climb ▸</button>
+          </div>
+        </div>
+        <div class="tabs" role="tablist" id="tabs"></div>
+        <div class="recap-body">
+          <h3 class="recap-question" id="recap-question"></h3>
+          <p class="recap-you" id="recap-you"></p>
+          <ol class="ranking" id="ranking"></ol>
+          <p class="source" id="source"></p>
+        </div>
+        <p class="next-puzzle" id="countdown"></p>
+      </section>
+    </main>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

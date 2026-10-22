@@ -1,0 +1,122 @@
+{
+  "day": -2,
+  "questions": [
+    {
+      "level": 1,
+      "prompt": "in South America with the largest area",
+      "source": "CIA World Factbook (all 12 sovereign countries)",
+      "ranking": [
+        ["BRA","8.52M km²"],
+        ["ARG","2.78M km²"],
+        ["PER","1.29M km²"],
+        ["COL","1.14M km²"],
+        ["BOL","1.10M km²"],
+        ["VEN","916K km²"],
+        ["CHL","756K km²"],
+        ["PRY","407K km²"],
+        ["ECU","284K km²"],
+        ["GUY","215K km²"],
+        ["URY","176K km²"],
+        ["SUR","164K km²"]
+      ]
+    },
+    {
+      "level": 2,
+      "prompt": "in Africa with the highest population",
+      "source": "UN World Population Prospects, 2024 estimates",
+      "ranking": [
+        ["NGA","233 million"],
+        ["ETH","132 million"],
+        ["EGY","116 million"],
+        ["COD","109 million"],
+        ["TZA","69 million"],
+        ["ZAF","64 million"],
+        ["KEN","56 million"],
+        ["SDN","50.4 million"],
+        ["UGA","50.0 million"],
+        ["DZA","47 million"],
+        ["MAR","38 million"],
+        ["AGO","37.9 million"],
+        ["MOZ","34.6 million"],
+        ["GHA","34.4 million"],
+        ["MDG","31.9 million"],
+        ["CIV","31.9 million"],
+        ["CMR","29 million"],
+        ["NER","27 million"],
+        ["MLI","24.5 million"],
+        ["BFA","23.5 million"]
+      ]
+    },
+    {
+      "level": 3,
+      "prompt": "with the highest CO₂ emissions",
+      "source": "Global Carbon Project, 2023",
+      "ranking": [
+        ["CHN","~11.9 Gt"],
+        ["USA","~4.9 Gt"],
+        ["IND","~3.1 Gt"],
+        ["RUS","~1.8 Gt"],
+        ["JPN","~1.0 Gt"],
+        ["IRN","~0.82 Gt"],
+        ["IDN","~0.73 Gt"],
+        ["SAU","~0.70 Gt"],
+        ["DEU","~0.60 Gt"],
+        ["KOR","~0.58 Gt"],
+        ["CAN","~0.55 Gt"],
+        ["MEX","~0.48 Gt"],
+        ["BRA","~0.48 Gt"],
+        ["TUR","~0.45 Gt"],
+        ["ZAF","~0.40 Gt"],
+        ["AUS","~0.38 Gt"],
+        ["VNM","~0.37 Gt"],
+        ["GBR","~0.30 Gt"],
+        ["ITA","~0.30 Gt"],
+        ["POL","~0.28 Gt"]
+      ]
+    },
+    {
+      "level": 4,
+      "prompt": "with the most international tourist arrivals",
+      "source": "UN Tourism, 2023",
+      "ranking": [
+        ["FRA","~100M"],
+        ["ESP","~85M"],
+        ["USA","~66M"],
+        ["ITA","~57M"],
+        ["TUR","~55M"],
+        ["MEX","~42M"],
+        ["GBR","~38M"],
+        ["DEU","~35M"],
+        ["GRC","~33M"],
+        ["AUT","~31M"],
+        ["THA","~28M"],
+        ["SAU","~27M"],
+        ["JPN","~25M"],
+        ["NLD","~20M"],
+        ["CAN","~18M"]
+      ]
+    },
+    {
+      "level": 5,
+      "prompt": "that produces the most wine",
+      "source": "OIV, 2023",
+      "ranking": [
+        ["FRA",""],
+        ["ITA",""],
+        ["ESP",""],
+        ["USA",""],
+        ["CHL",""],
+        ["AUS",""],
+        ["ZAF",""],
+        ["ARG",""],
+        ["DEU",""],
+        ["PRT",""],
+        ["RUS",""],
+        ["CHN",""],
+        ["ROU",""],
+        ["NZL",""],
+        ["BRA",""]
+      ]
+    }
+  ]
+}

@@ -1,0 +1,130 @@
+{
+  "day": 0,
+  "questions": [
+    {
+      "level": 1,
+      "prompt": "with the highest population",
+      "source": "UN World Population Prospects, 2024 estimates",
+      "ranking": [
+        ["IND","1.45 billion"],
+        ["CHN","1.42 billion"],
+        ["USA","345 million"],
+        ["IDN","283 million"],
+        ["PAK","251 million"],
+        ["NGA","233 million"],
+        ["BRA","212 million"],
+        ["BGD","174 million"],
+        ["RUS","144 million"],
+        ["ETH","132 million"],
+        ["MEX","131 million"],
+        ["JPN","124 million"],
+        ["EGY","116 million"],
+        ["PHL","116 million"],
+        ["COD","109 million"],
+        ["VNM","101 million"],
+        ["IRN","91 million"],
+        ["TUR","87 million"],
+        ["DEU","84 million"],
+        ["THA","72 million"]
+      ]
+    },
+    {
+      "level": 2,
+      "prompt": "with the most forest",
+      "source": "FAO Global Forest Resources Assessment 2020",
+      "ranking": [
+        ["RUS","815M ha"],
+        ["BRA","497M ha"],
+        ["CAN","347M ha"],
+        ["USA","310M ha"],
+        ["CHN","220M ha"],
+        ["AUS","134M ha"],
+        ["COD","126M ha"],
+        ["IDN","92M ha"],
+        ["PER","72M ha"],
+        ["IND","72M ha"],
+        ["AGO","67M ha"],
+        ["MEX","66M ha"],
+        ["COL","59M ha"],
+        ["BOL","51M ha"],
+        ["VEN","46M ha"],
+        ["TZA","46M ha"],
+        ["ZMB","45M ha"],
+        ["MOZ","37M ha"],
+        ["PNG","36M ha"],
+        ["ARG","29M ha"]
+      ]
+    },
+    {
+      "level": 3,
+      "prompt": "with the highest mountain",
+      "source": "National high points",
+      "ranking": [
+        ["NPL","Everest, 8,849 m",1],
+        ["CHN","Everest, 8,849 m",1],
+        ["PAK","K2, 8,611 m"],
+        ["IND","Kangchenjunga, 8,586 m"],
+        ["BTN","Gangkhar Puensum, 7,570 m"],
+        ["TJK","Ismoil Somoni, 7,495 m"],
+        ["AFG","Noshaq, 7,492 m"],
+        ["KGZ","Jengish Chokusu, 7,439 m"],
+        ["KAZ","Khan Tengri, 7,010 m"],
+        ["ARG","Aconcagua, 6,961 m"],
+        ["CHL","Ojos del Salado, 6,893 m"],
+        ["PER","Huascarán, 6,768 m"],
+        ["BOL","Sajama, 6,542 m"],
+        ["ECU","Chimborazo, 6,263 m"],
+        ["USA","Denali, 6,190 m"],
+        ["TZA","Kilimanjaro, 5,895 m"],
+        ["MMR","Hkakabo Razi, 5,881 m"],
+        ["COL","Cristóbal Colón, 5,730 m"],
+        ["RUS","Elbrus, 5,642 m"],
+        ["MEX","Pico de Orizaba, 5,636 m"]
+      ]
+    },
+    {
+      "level": 4,
+      "prompt": "that produces the most coffee",
+      "source": "International Coffee Organization",
+      "ranking": [
+        ["BRA",""],
+        ["VNM",""],
+        ["COL",""],
+        ["IDN",""],
+        ["ETH",""],
+        ["HND",""],
+        ["UGA",""],
+        ["IND",""],
+        ["PER",""],
+        ["MEX",""],
+        ["GTM",""],
+        ["NIC",""],
+        ["CHN",""],
+        ["CRI",""],
+        ["TZA",""]
+      ]
+    },
+    {
+      "level": 5,
+      "prompt": "with the highest capital city",
+      "source": "Capital elevations (La Paz as seat of government)",
+      "ranking": [
+        ["BOL","La Paz, 3,640 m"],
+        ["ECU","Quito, 2,850 m"],
+        ["COL","Bogotá, 2,640 m"],
+        ["ETH","Addis Ababa, 2,355 m"],
+        ["BTN","Thimphu, 2,330 m"],
+        ["ERI","Asmara, 2,325 m"],
+        ["YEM","Sana'a, 2,250 m"],
+        ["MEX","Mexico City, 2,240 m"],
+        ["KEN","Nairobi, 1,795 m"],
+        ["AFG","Kabul, 1,790 m"],
+        ["NAM","Windhoek, 1,655 m"],
+        ["LSO","Maseru, 1,600 m"],
+        ["RWA","Kigali, 1,567 m"],
+        ["BDI","Gitega, 1,504 m"],
+        ["GTM","Guatemala City, 1,500 m"]
+      ]
+    }
+  ]
+}

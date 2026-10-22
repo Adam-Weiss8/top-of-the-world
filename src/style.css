@@ -1,0 +1,988 @@
+:root {
+  --paper: #eef1ea;
+  --card: #fbfcf8;
+  --ink: #22313f;
+  --muted: #5e6d78;
+  --line: #c9d3d6;
+  --glacier: #b9d4df;
+  --sign: #f6c21b;
+  --blaze: #d63a2f;
+  --alpenglow: #f4a48a;
+  /* score tiers, matching the share emoji 🟨🟪🟦🟩⬜ */
+  --gold: #f6c21b;
+  --purple: #8e6bb5;
+  --blue: #2f7fc1;
+  --green: #3f9b5b;
+  --grey: #b8c3c9;
+
+  --display: 'Big Shoulders Display', 'Arial Narrow', Impact, sans-serif;
+  --body: 'Work Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  --border: 2px solid var(--ink);
+  --shadow: 4px 4px 0 var(--ink);
+  --radius: 6px;
+  color-scheme: light;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+}
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font: 16px/1.45 var(--body);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+h1,
+h2,
+h3 {
+  margin: 0;
+  line-height: 1;
+}
+
+/* ---------- shared bits ---------- */
+
+.eyebrow {
+  margin: 0 0 6px;
+  font: 800 0.9rem/1.2 var(--display);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* a tiny version of the logo: a snowy peak with a red summit flag */
+.blaze::before {
+  content: '';
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  margin-right: 6px;
+  vertical-align: -3px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpolygon points='2,30 16,6 30,30' fill='%235d707e' stroke='%2322313f' stroke-width='2' stroke-linejoin='round'/%3E%3Cpolygon points='16,6 11,15 14,17 16,14 19,17 21,15' fill='white'/%3E%3Crect x='15' y='0' width='2' height='7' fill='%2322313f'/%3E%3Cpolygon points='17,0 24,2 17,4' fill='%23d63a2f'/%3E%3C/svg%3E")
+    center / contain no-repeat;
+}
+
+.poster {
+  font: 900 3.2rem/0.88 var(--display);
+  text-transform: uppercase;
+  letter-spacing: 0.01em;
+  text-shadow: 3px 3px 0 var(--alpenglow);
+}
+
+/* Yellow trail-sign button with an arrow tip. The shape lives on ::before so the
+   outline and offset shadow (drop-shadow) can follow it. */
+.sign {
+  position: relative;
+  isolation: isolate;
+  border: 0;
+  background: none;
+  padding: 10px 40px 10px 20px;
+  font: 800 1.3rem/1 var(--display);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink);
+  cursor: pointer;
+  filter: drop-shadow(2px 0 0 var(--ink)) drop-shadow(-2px 0 0 var(--ink)) drop-shadow(0 2px 0 var(--ink))
+    drop-shadow(0 -2px 0 var(--ink)) drop-shadow(3px 3px 0 var(--ink));
+  transition: transform 0.12s;
+}
+.sign::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--sign);
+  clip-path: polygon(0 0, calc(100% - 18px) 0, 100% 50%, calc(100% - 18px) 100%, 0 100%);
+}
+.sign:hover:not(:disabled) {
+  transform: translateX(3px);
+}
+.sign:active:not(:disabled) {
+  transform: translate(3px, 2px);
+}
+.sign:disabled {
+  cursor: default;
+  color: var(--muted);
+}
+.sign:disabled::before {
+  background: #e3e6e0;
+}
+.sign.wide {
+  display: block;
+  width: calc(100% - 6px);
+  margin-top: 14px;
+  padding: 13px 40px 13px 20px;
+}
+
+.link-button {
+  border: 0;
+  background: none;
+  padding: 6px 2px;
+  font: 800 1.05rem/1 var(--display);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink);
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 4px;
+}
+
+/* question dots, coloured by how each answer went */
+.dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid var(--line);
+  background: var(--card);
+  display: inline-block;
+  flex: none;
+}
+.dot.current {
+  border-color: var(--ink);
+  animation: pulse 1.4s ease-in-out infinite;
+}
+.dot.gold { background: var(--gold); border-color: var(--ink); }
+.dot.purple { background: var(--purple); border-color: var(--ink); }
+.dot.blue { background: var(--blue); border-color: var(--ink); }
+.dot.green { background: var(--green); border-color: var(--ink); }
+.dot.grey { background: var(--grey); border-color: var(--ink); }
+
+@keyframes pulse {
+  50% { background: var(--sign); }
+}
+
+.pts.gold { color: #a87f00; }
+.pts.purple { color: var(--purple); }
+.pts.blue { color: var(--blue); }
+.pts.green { color: var(--green); }
+.pts.grey { color: var(--muted); }
+
+/* ---------- top bar ---------- */
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 16px;
+  border-bottom: var(--border);
+  background: var(--card);
+  z-index: 8;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+.brand-mark {
+  width: 34px;
+  height: 34px;
+  flex: none;
+}
+.topbar h1 {
+  font: 900 1.55rem/0.95 var(--display);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+.brand-sub {
+  margin: 2px 0 0;
+  font: 700 0.85rem/1.1 var(--display);
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.status {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.dots {
+  display: flex;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.altitude-readout {
+  min-width: 92px;
+  text-align: right;
+  font: 900 1.45rem/1 var(--display);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+}
+
+/* ---------- stage + map ---------- */
+
+.stage {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+}
+
+.stage > .map {
+  position: absolute;
+  inset: 0;
+}
+
+.pin {
+  pointer-events: none;
+}
+.pin.drop svg {
+  animation: plant 0.4s cubic-bezier(0.3, 1.6, 0.6, 1);
+  transform-origin: bottom left;
+}
+@keyframes plant {
+  from { transform: translateY(-36px) rotate(-12deg); opacity: 0; }
+  to { transform: none; opacity: 1; }
+}
+
+.maplibregl-ctrl-attrib {
+  font-family: var(--body);
+}
+
+/* rank badges on the recap map */
+.badge {
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  height: 24px;
+  padding: 0 6px;
+  border: 2px solid var(--ink);
+  border-radius: 12px;
+  box-shadow: 2px 2px 0 var(--ink);
+  font: 900 0.95rem/1 var(--display);
+  color: var(--ink);
+  background: var(--card);
+  /* markers are positioned with transform, so animate the separate scale property */
+  animation: badge-in 0.4s cubic-bezier(0.3, 1.6, 0.6, 1) backwards;
+}
+@keyframes badge-in {
+  from { scale: 0.4; opacity: 0; }
+}
+.badge.gold { background: var(--gold); }
+.badge.purple { background: #c7a6ee; }
+.badge.blue { background: #8ccaf5; }
+.badge.green { background: #8fdca6; }
+.badge em {
+  margin-left: 4px;
+  font-style: normal;
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--blaze);
+}
+.badge.miss em {
+  margin: 0;
+}
+.badge.you {
+  border-color: var(--blaze);
+  box-shadow: 2px 2px 0 var(--blaze);
+  z-index: 2;
+}
+.badge.summit {
+  /* no position override: MapLibre already positions markers absolutely */
+  min-width: 34px;
+  height: 34px;
+  border-radius: 17px;
+  font-size: 1.3rem;
+  z-index: 3;
+  box-shadow: 2px 2px 0 var(--ink), 0 0 0 4px rgba(246, 194, 27, 0.35), 0 0 22px 6px rgba(246, 194, 27, 0.55);
+}
+/* twinkling sparkles around #1 */
+.badge.summit::before,
+.badge.summit::after {
+  content: '✦';
+  position: absolute;
+  color: #fff;
+  -webkit-text-stroke: 1px #c99700;
+  font-size: 1rem;
+  animation: twinkle 1.3s ease-in-out infinite;
+}
+.badge.summit::before {
+  top: -16px;
+  right: -12px;
+}
+.badge.summit::after {
+  bottom: -14px;
+  left: -14px;
+  font-size: 0.75rem;
+  animation-delay: 0.65s;
+}
+@keyframes twinkle {
+  0%, 100% { opacity: 0.2; scale: 0.6; rotate: 0deg; }
+  50% { opacity: 1; scale: 1.15; rotate: 45deg; }
+}
+
+/* ---------- floating cards ---------- */
+
+.question-card,
+.pick-bar,
+.recap,
+.panel {
+  z-index: 3; /* above the map's attribution control */
+  background: var(--card);
+  border: var(--border);
+  box-shadow: var(--shadow);
+  border-radius: var(--radius);
+}
+
+.question-card {
+  position: absolute;
+  top: 16px;
+  left: 50%;
+  translate: -50% 0;
+  width: min(620px, calc(100% - 32px));
+  padding: 14px 20px 16px;
+  text-align: center;
+  animation: rise 0.35s ease-out;
+}
+.question-card h2 {
+  font: 900 2.1rem/0.95 var(--display);
+  text-transform: uppercase;
+  letter-spacing: 0.01em;
+}
+.question-card .lead {
+  display: block;
+  margin-bottom: 4px;
+  font: 500 1rem/1.2 var(--body);
+  text-transform: none;
+  color: var(--muted);
+}
+
+.pick-bar {
+  position: absolute;
+  bottom: calc(22px + env(safe-area-inset-bottom));
+  left: 50%;
+  translate: -50% 0;
+  width: min(560px, calc(100% - 32px));
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 14px 10px 16px;
+}
+.pick-label {
+  color: var(--muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.pick-label strong {
+  font: 800 1.35rem/1 var(--display);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--ink);
+}
+.pin-tag {
+  font: 800 0.8rem/1 var(--display);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #fff;
+  background: var(--blaze);
+  padding: 3px 6px;
+  border-radius: 3px;
+  vertical-align: 3px;
+}
+
+@keyframes rise {
+  from { transform: translateY(14px); opacity: 0; }
+  to { transform: none; opacity: 1; }
+}
+
+/* ---------- journey (full-screen climb) ---------- */
+
+.journey-screen {
+  position: absolute;
+  inset: 0;
+  z-index: 7;
+  overflow: hidden;
+  animation: fade-in 0.35s ease-out;
+  cursor: pointer;
+}
+@keyframes fade-in {
+  from { opacity: 0; }
+}
+
+.journey {
+  background: linear-gradient(var(--sky-top, #8fc1df), var(--sky-bottom, #f6d6c6));
+}
+.journey-view {
+  position: absolute;
+  inset: 0;
+  touch-action: none; /* drags scroll the scene, not the page */
+}
+.journey-svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.hud {
+  position: absolute;
+  top: 18px;
+  left: 0;
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  pointer-events: none;
+  text-align: center;
+}
+.hud-points {
+  font: 900 3.4rem/1 var(--display);
+  color: #fff;
+  -webkit-text-stroke: 2px var(--ink);
+  paint-order: stroke fill;
+  text-shadow: 4px 4px 0 var(--ink);
+  animation: rise 0.4s ease-out;
+}
+.hud-points.gold { color: var(--gold); }
+.hud-points.purple { color: #c7a6ee; }
+.hud-points.blue { color: #8ccaf5; }
+.hud-points.green { color: #8fdca6; }
+.hud-points.grey { color: var(--grey); }
+.hud-altitude {
+  font: 900 2rem/1 var(--display);
+  font-variant-numeric: tabular-nums;
+  color: #fff;
+  -webkit-text-stroke: 1.5px var(--ink);
+  paint-order: stroke fill;
+  text-shadow: 3px 3px 0 var(--ink);
+}
+.hud-landmark {
+  min-height: 1.6em;
+  font: 800 1.05rem/1 var(--display);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink);
+  background: var(--sign);
+  border: var(--border);
+  box-shadow: 3px 3px 0 var(--ink);
+  padding: 6px 12px;
+  border-radius: 4px;
+}
+.hud-landmark:empty {
+  visibility: hidden;
+}
+.hud-landmark.pop {
+  animation: pop 0.45s cubic-bezier(0.3, 1.6, 0.6, 1);
+}
+@keyframes pop {
+  from { transform: scale(0.6); opacity: 0; }
+}
+
+.hud-next {
+  position: absolute;
+  left: 50%;
+  bottom: calc(26px + env(safe-area-inset-bottom));
+  translate: -50% 0;
+}
+.skip-hint {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: calc(84px + env(safe-area-inset-bottom));
+  margin: 0;
+  text-align: center;
+  font: 800 0.85rem/1 var(--display);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.85);
+  text-shadow: 1px 1px 0 var(--ink);
+  pointer-events: none;
+}
+
+/* journey internals */
+.landmark {
+  opacity: 0;
+  transition: opacity 0.5s;
+}
+.landmark.passed {
+  opacity: 1;
+}
+.landmark-line {
+  stroke: rgba(255, 255, 255, 0.4);
+  stroke-width: 1.5;
+  stroke-dasharray: 4 6;
+}
+.landmark-tag rect {
+  fill: rgba(34, 49, 63, 0.78);
+}
+.landmark-tag text {
+  font: 600 12px var(--body);
+  fill: #fff;
+}
+
+.cloud {
+  opacity: 0.92;
+  animation: sway 26s ease-in-out infinite alternate;
+}
+.cloud.slow {
+  animation-duration: 38s;
+  animation-direction: alternate-reverse;
+}
+.drift {
+  animation: sway 18s ease-in-out infinite alternate;
+}
+@keyframes sway {
+  from { translate: -40px 0; }
+  to { translate: 40px 0; }
+}
+.jet {
+  animation: fly 16s linear infinite;
+}
+@keyframes fly {
+  from { translate: 700px 0; }
+  to { translate: -800px 0; }
+}
+
+/* the route beyond the summit */
+.balloon-path {
+  stroke: #f6c21b;
+  stroke-width: 3.5;
+  stroke-dasharray: 2 9;
+  stroke-linecap: round;
+}
+.smoke {
+  stroke: rgba(255, 255, 255, 0.75);
+  stroke-width: 7;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  filter: drop-shadow(0 0 3px rgba(255, 255, 255, 0.6));
+}
+.trail-star {
+  fill: #f6c21b;
+  stroke: #fff6cf;
+  stroke-width: 0.8;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: twinkle 1.6s ease-in-out infinite;
+}
+
+/* scenery */
+.flock {
+  animation: sway 14s ease-in-out infinite alternate;
+}
+.bird {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: flap 0.5s ease-in-out infinite alternate;
+}
+@keyframes flap {
+  to { scale: 1 0.35; }
+}
+.concorde {
+  animation: fly-right 11s linear infinite;
+}
+@keyframes fly-right {
+  from { translate: -700px 0; }
+  to { translate: 1100px 0; }
+}
+.parachute {
+  transform-box: fill-box;
+  transform-origin: center top;
+  animation: drift-down 7s ease-in-out infinite alternate;
+}
+@keyframes drift-down {
+  from { translate: 0 -20px; rotate: -6deg; }
+  to { translate: 0 30px; rotate: 6deg; }
+}
+.aurora {
+  animation: shimmer 5s ease-in-out infinite alternate;
+}
+@keyframes shimmer {
+  from { opacity: 0.55; translate: -30px 0; }
+  to { opacity: 1; translate: 30px -6px; }
+}
+.ufo {
+  animation: hover 2.4s ease-in-out infinite alternate;
+}
+@keyframes hover {
+  from { translate: -10px 0; }
+  to { translate: 14px -10px; }
+}
+.shooting-star {
+  opacity: 0;
+  animation: shoot 7s ease-out infinite;
+}
+.shooting-star.late {
+  animation-delay: 3.5s;
+}
+@keyframes shoot {
+  0% { opacity: 0; translate: 0 0; }
+  3% { opacity: 1; }
+  12% { opacity: 0; translate: -180px -60px; }
+  100% { opacity: 0; translate: -180px -60px; }
+}
+
+.rocket .flame {
+  display: none;
+  transform-box: fill-box;
+  transform-origin: center top;
+}
+.rocket.burning .flame {
+  display: inline;
+  animation: flicker 0.1s ease-in-out infinite alternate;
+}
+@keyframes flicker {
+  from { scale: 1 0.8; }
+  to { scale: 1.08 1.15; }
+}
+
+.frame-b {
+  opacity: 0;
+}
+.walking .frame-a {
+  animation: frame 0.36s steps(1) infinite;
+}
+.walking .frame-b {
+  animation: frame 0.36s steps(1) infinite reverse;
+}
+@keyframes frame {
+  0% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+.wave {
+  transform-box: fill-box;
+  transform-origin: left center;
+  animation: wave 0.9s ease-in-out infinite;
+}
+@keyframes wave {
+  50% { scale: 0.8 1; }
+}
+
+.flag-rise {
+  scale: 1 0;
+  transform-box: fill-box;
+  transform-origin: center bottom;
+  transition: scale 0.45s cubic-bezier(0.3, 1.6, 0.6, 1);
+}
+.planted .flag-rise {
+  scale: 1 1;
+}
+
+.intro-scene {
+  height: 190px;
+  margin: 16px 0 6px;
+  border: var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  --sky-top: #8fc1df;
+  --sky-bottom: #f6d6c6;
+}
+.intro-scene .journey-svg {
+  overflow: hidden;
+}
+
+/* ---------- overlays ---------- */
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: color-mix(in srgb, var(--paper) 60%, transparent);
+  backdrop-filter: blur(3px);
+  z-index: 6;
+  overflow-y: auto;
+}
+
+.panel {
+  width: min(440px, 100%);
+  padding: 22px 22px 18px;
+  text-align: center;
+  animation: rise 0.35s ease-out;
+}
+.panel p {
+  margin: 10px 0;
+}
+
+.rules {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.rules span {
+  font: 700 0.95rem/1 var(--display);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  border: 1.5px solid var(--ink);
+  border-radius: 3px;
+  padding: 4px 7px;
+  background: var(--paper);
+}
+.rules span:first-child {
+  background: var(--sign);
+}
+
+/* ---------- recap ---------- */
+
+.recap {
+  position: absolute;
+  right: 16px;
+  top: 16px;
+  bottom: 16px;
+  width: 410px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: rise 0.35s ease-out;
+}
+
+@media (max-width: 720px) {
+  .recap {
+    left: 0;
+    right: 0;
+    top: auto;
+    bottom: 0;
+    width: auto;
+    height: 64%;
+    border-width: 2px 0 0;
+    border-radius: 0;
+    box-shadow: 0 -4px 0 rgba(34, 49, 63, 0.12);
+  }
+}
+
+.recap-head {
+  padding: 16px 18px 10px;
+  border-bottom: var(--border);
+}
+.recap-head .poster {
+  font-size: 2.3rem;
+}
+.recap-score {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  margin: 8px 0 10px;
+}
+.recap-points {
+  font: 900 1.9rem/1 var(--display);
+  font-variant-numeric: tabular-nums;
+}
+.recap-altitude {
+  color: var(--muted);
+  font-weight: 500;
+}
+.recap-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.recap-actions .sign {
+  font-size: 1.1rem;
+  padding: 8px 34px 8px 16px;
+}
+
+.tabs {
+  display: flex;
+  border-bottom: var(--border);
+}
+.tab {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 9px 4px;
+  border: 0;
+  border-right: 1.5px solid var(--line);
+  background: var(--paper);
+  font: 800 1.05rem/1 var(--display);
+  letter-spacing: 0.05em;
+  color: var(--muted);
+  cursor: pointer;
+}
+.tab:last-child {
+  border-right: 0;
+}
+.tab .dot {
+  width: 12px;
+  height: 12px;
+}
+.tab[aria-selected='true'] {
+  background: var(--card);
+  color: var(--ink);
+  box-shadow: inset 0 -4px 0 var(--sign);
+}
+
+.recap-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 12px 18px;
+}
+.recap-question {
+  font: 900 1.45rem/1 var(--display);
+  text-transform: uppercase;
+}
+.recap-question span {
+  display: block;
+  margin-bottom: 3px;
+  font: 500 0.85rem/1.2 var(--body);
+  text-transform: none;
+  color: var(--muted);
+}
+.recap-you {
+  margin: 8px 0 10px;
+}
+
+.ranking {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 2px solid var(--ink);
+}
+.ranking li {
+  display: grid;
+  grid-template-columns: 30px 1fr auto;
+  align-items: center;
+  gap: 8px;
+  padding: 4px;
+  border-bottom: 1px solid var(--line);
+  font-size: 0.9rem;
+}
+.ranking .rank {
+  width: 26px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  font: 800 0.95rem/1 var(--display);
+  background: var(--glacier);
+  border: 1.5px solid var(--ink);
+  border-radius: 3px;
+}
+.ranking li:first-child .rank {
+  background: var(--sign);
+}
+.ranking li.you {
+  background: color-mix(in srgb, var(--blaze) 16%, transparent);
+  font-weight: 600;
+}
+.ranking li.you .name::after {
+  content: ' ← you';
+  font-weight: 700;
+  color: var(--blaze);
+}
+.ranking .value {
+  color: var(--muted);
+  text-align: right;
+}
+
+.source {
+  margin: 8px 0 0;
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.next-puzzle {
+  margin: 0;
+  padding: 8px 18px 10px;
+  border-top: 1.5px solid var(--line);
+  color: var(--muted);
+  font: 700 0.95rem/1 var(--display);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-variant-numeric: tabular-nums;
+}
+.next-puzzle a {
+  color: var(--blaze);
+}
+
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 32px;
+  transform: translate(-50%, 20px);
+  background: var(--ink);
+  color: var(--paper);
+  font-weight: 600;
+  padding: 10px 16px;
+  border-radius: var(--radius);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s, transform 0.2s;
+  z-index: 10;
+}
+.toast.show {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+@media (max-width: 720px) {
+  .topbar {
+    padding: 8px 12px;
+  }
+  .topbar h1 {
+    font-size: 1.2rem;
+  }
+  .brand-mark {
+    width: 26px;
+    height: 26px;
+  }
+  .brand-sub {
+    font-size: 0.72rem;
+  }
+  .status {
+    gap: 8px;
+  }
+  .dots {
+    gap: 4px;
+  }
+  .dot {
+    width: 11px;
+    height: 11px;
+  }
+  .altitude-readout {
+    min-width: 0;
+    font-size: 1.15rem;
+  }
+  .question-card h2 {
+    font-size: 1.65rem;
+  }
+  .poster {
+    font-size: 2.6rem;
+  }
+  .hud-points {
+    font-size: 2.8rem;
+  }
+  .hud-altitude {
+    font-size: 1.6rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
