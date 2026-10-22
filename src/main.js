@@ -149,7 +149,8 @@ const REVEAL_FX = {
   purple: { color: '#b48ef0', glow: 0.7, shake: 9, sparkles: 9, label: 'So close!' },
   blue: { color: '#5cb2ff', glow: 0.45, shake: 4, sparkles: 4, label: 'Nice climb' },
   green: { color: '#6ee7a0', glow: 0.25, shake: 1.5, sparkles: 0, label: 'On the list' },
-  grey: { color: '#b8c3c9', glow: 0, shake: 0, sparkles: 0, label: 'Off the list' },
+  // A miss holds longer so the toppling-rocket scene can play out.
+  grey: { color: '#b8c3c9', glow: 0, shake: 0, sparkles: 0, label: 'Off the list', hold: 3300 },
 };
 const DRUMROLL_MS = 1400;
 const COUNT_MS = 450;
@@ -212,7 +213,7 @@ function revealScore(code, points) {
           stage.style.setProperty('--shake', `${fx.shake}px`);
           restartAnimation(stage, 'shake');
         }
-        later(HOLD_MS, finish);
+        later(fx.hold ?? HOLD_MS, finish);
       };
       requestAnimationFrame(count);
     };
