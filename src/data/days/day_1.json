@@ -4,7 +4,7 @@
   "questions": [
     {
       "level": 1,
-      "prompt": "with the tallest mountain (base to peak)",
+      "prompt": "with the tallest mountain (above sea level)",
       "source": "List of elevation extremes by country - Wikipedia",
       "ranking": [
         ["NPL","Mount Everest - 8,849 m"],
