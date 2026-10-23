@@ -83,30 +83,45 @@ h3 {
   text-shadow: 3px 3px 0 var(--alpenglow);
 }
 
-/* Yellow trail-sign button with an arrow tip. The shape lives on ::before so the
-   outline and offset shadow (drop-shadow) can follow it. */
+/* Yellow trail-sign button with an arrow tip, drawn as two clipped layers behind the label:
+   ::before is ink and fills the box (the outline, and the hard offset shadow down the right
+   and bottom), ::after is the yellow face inset within it.
+   Both paint INSIDE the element's own box, which is the point. The outline used to come from
+   a chain of five drop-shadow() filters, and a filter paints outside the box with no space
+   reserved for it, so the compositor clipped those edges and redrew them on every frame the
+   recap sheet moved — the button's border flickering in and out. The padding below carries
+   the outline and shadow widths, so the yellow face and the label sit exactly where they did. */
 .sign {
+  --sign-outline-w: 2px; /* ink outline, every side */
+  --sign-shadow-w: 5px; /* ink down the right and bottom: the outline plus a 3px offset shadow */
   position: relative;
   isolation: isolate;
   border: 0;
   background: none;
-  padding: 10px 40px 10px 20px;
+  padding: calc(10px + var(--sign-outline-w)) calc(40px + var(--sign-shadow-w))
+    calc(10px + var(--sign-shadow-w)) calc(20px + var(--sign-outline-w));
   font: 800 1.3rem/1 var(--display);
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--ink);
   cursor: pointer;
-  filter: drop-shadow(2px 0 0 var(--ink)) drop-shadow(-2px 0 0 var(--ink)) drop-shadow(0 2px 0 var(--ink))
-    drop-shadow(0 -2px 0 var(--ink)) drop-shadow(3px 3px 0 var(--ink));
   transition: transform 0.12s;
 }
-.sign::before {
+.sign::before,
+.sign::after {
   content: '';
   position: absolute;
+  clip-path: polygon(0 0, calc(100% - 18px) 0, 100% 50%, calc(100% - 18px) 100%, 0 100%);
+}
+.sign::before {
   inset: 0;
+  z-index: -2;
+  background: var(--ink);
+}
+.sign::after {
+  inset: var(--sign-outline-w) var(--sign-shadow-w) var(--sign-shadow-w) var(--sign-outline-w);
   z-index: -1;
   background: var(--sign);
-  clip-path: polygon(0 0, calc(100% - 18px) 0, 100% 50%, calc(100% - 18px) 100%, 0 100%);
 }
 /* Only nudge on real hover: on touch screens :hover sticks after a tap and the sign jumps. */
 @media (hover: hover) {
@@ -125,14 +140,15 @@ h3 {
   cursor: default;
   color: var(--muted);
 }
-.sign:disabled::before {
-  background: #e3e6e0;
+.sign:disabled::after {
+  background: #e3e6e0; /* the face greys out; the ink outline behind it stays */
 }
 .sign.wide {
   display: block;
-  width: calc(100% - 6px);
+  width: 100%; /* the outline and shadow are inside the box now, so no need to inset it */
   margin-top: 14px;
-  padding: 13px 40px 13px 20px;
+  padding: calc(13px + var(--sign-outline-w)) calc(40px + var(--sign-shadow-w))
+    calc(13px + var(--sign-shadow-w)) calc(20px + var(--sign-outline-w));
 }
 
 .link-button {
@@ -1160,7 +1176,8 @@ h3 {
 .recap-actions .sign {
   flex: none; /* never squeezed into its own arrow tip */
   font-size: 1.1rem;
-  padding: 8px 34px 8px 16px;
+  padding: calc(8px + var(--sign-outline-w)) calc(34px + var(--sign-shadow-w))
+    calc(8px + var(--sign-shadow-w)) calc(16px + var(--sign-outline-w));
 }
 
 .tabs {
