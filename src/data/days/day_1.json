@@ -58,7 +58,7 @@
     },
     {
       "level": 3,
-      "prompt": "with the most active volcanoes",
+      "prompt": "with the most volcanoes",
       "source": "Which Countries Have the Most Volcanoes? - Smithsonian Global Volcanism Program",
       "ranking": [
         ["USA","165"],
