@@ -31,6 +31,33 @@
     },
     {
       "level": 2,
+      "prompt": "with the lowest population",
+      "source": "United Nations — World Population Prospects",
+      "ranking": [
+        ["VAT","764"],
+        ["TUV","9,492"],
+        ["NRU","12,025"],
+        ["PLW","18,058"],
+        ["SMR","33,572"],
+        ["MCO","38,341"],
+        ["LIE","40,128"],
+        ["MHL","41,996"],
+        ["KNA","47,755"],
+        ["DMA","66,205"],
+        ["AND","80,856"],
+        ["ATG","93,772"],
+        ["FSM","99,603"],
+        ["SYC","100,535"],
+        ["VCT","103,948"],
+        ["TON","104,175"],
+        ["GRD","117,081"],
+        ["KIR","133,515"],
+        ["LCA","180,251"],
+        ["WSM","225,681"]
+      ]
+    },
+    {
+      "level": 3,
       "prompt": "with the most amount of coastline",
       "source": "List of countries and dependencies by length of coastline - Wikipedia",
       "ranking": [
@@ -54,33 +81,6 @@
         ["IND","7,000 km"],
         ["CHL","6,435 km"],
         ["FSM","6,112 km"]
-      ]
-    },
-    {
-      "level": 3,
-      "prompt": "with the highest coffee production (freebie if you played day 0 :) )",
-      "source": "Production — Coffee - USDA Foreign Agricultural Service (60kg bags)",
-      "ranking": [
-        ["BRA","63.0 million"],
-        ["VNM","31.7 million"],
-        ["COL","12.5 million"],
-        ["IDN","12.37 million"],
-        ["ETH","11.56 million"],
-        ["UGA","7.10 million"],
-        ["IND","6.43 million"],
-        ["HND","5.53 million"],
-        ["PER","4.76 million"],
-        ["MEX","4.08 million"],
-        ["GTM","3.16 million"],
-        ["NIC","2.56 million"],
-        ["CHN","1.90 million"],
-        ["MYS","1.40 million"],
-        ["TZA","1.35 million"],
-        ["CRI","1.30 million"],
-        ["KEN","1.00 million"],
-        ["THA","0.90 million"],
-        ["PNG","0.85 million"],
-        ["SLV","0.60 million"]
       ]
     },
     {
