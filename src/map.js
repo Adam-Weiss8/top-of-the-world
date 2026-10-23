@@ -4,6 +4,7 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 import countries from './data/countries.json';
 import { topoPattern, graticule } from './topo.js';
 import { pointsFor, tier } from './daily.js';
+import { SOVEREIGN_OF, isCountry } from './not-countries.js';
 
 setWorkerUrl(workerUrl);
 
@@ -61,11 +62,12 @@ function boundsOf(codes) {
   ];
 }
 
-// Countries too small to see at world zoom get a clickable dot.
+// Countries too small to see at world zoom get a clickable dot. Territories never do:
+// a dot in the ocean that picks someone else's country would only mislead.
 const tinyDots = {
   type: 'FeatureCollection',
   features: countries.features
-    .filter((f) => f.properties.tiny)
+    .filter((f) => f.properties.tiny && isCountry(f.properties.code))
     .map(({ properties: { code, name, lx, ly } }) => ({
       type: 'Feature',
       properties: { code, name },
@@ -211,6 +213,14 @@ export function createMap(container, { onPick }) {
     if (isTiny.has(code)) map.setFeatureState({ source: 'tiny', id: code }, state);
   };
 
+  // A territory isn't pickable, so a hit on one counts for the country it belongs to:
+  // Greenland picks Denmark, Puerto Rico picks the United States.
+  const asCountry = (props) => {
+    if (!props) return null;
+    const code = SOVEREIGN_OF[props.code];
+    return code ? byCode[code] ?? null : props;
+  };
+
   // Forgiving hit test: a tiny-country dot near the pointer wins, then the country under
   // it, then any country within a few pixels (for near-misses along coastlines).
   const countryAt = ({ x, y }) => {
@@ -224,7 +234,7 @@ export function createMap(container, { onPick }) {
       return dots.sort((a, b) => dist(a) - dist(b))[0].properties;
     }
     const under = map.queryRenderedFeatures([x, y], { layers: ['country-fill'] })[0];
-    return (under ?? map.queryRenderedFeatures(box(6), { layers: ['country-fill'] })[0])?.properties ?? null;
+    return asCountry((under ?? map.queryRenderedFeatures(box(6), { layers: ['country-fill'] })[0])?.properties);
   };
 
   // Fit `bounds` into whatever part of the map isn't covered by a panel.

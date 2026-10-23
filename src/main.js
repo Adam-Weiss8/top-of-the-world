@@ -90,6 +90,7 @@ const restartAnimation = (el, cls) => {
 };
 
 let unlockTimer;
+let settleTimer;
 
 /**
  * Show the next question with a little ceremony: the map dims, the card's lines fade in,
@@ -117,7 +118,15 @@ function showQuestion() {
   restartAnimation($('pick-bar'), 'revealing');
   restartAnimation(stage, 'question-intro');
   clearTimeout(unlockTimer);
+  clearTimeout(settleTimer);
   unlockTimer = setTimeout(() => map.unlock(), revealMs);
+  // Then drop `revealing`, so nothing is left holding a finished animation: a word that keeps
+  // its blur keyframes stays fuzzy on iOS, where the blurred raster is never redrawn. The last
+  // word lands just after revealMs and the pick bar finishes its 0.4s fade after that.
+  settleTimer = setTimeout(() => {
+    $('question-card').classList.remove('revealing');
+    $('pick-bar').classList.remove('revealing');
+  }, revealMs + 520);
 }
 
 async function confirmPick() {
@@ -351,7 +360,15 @@ let sheet = 'middle';
 function sheetPx(state) {
   const stageHeight = $('map').clientHeight;
   if (state === 'expanded') return stageHeight;
-  if (state === 'middle') return Math.round(stageHeight * 0.6);
+  if (state === 'middle') {
+    // Never shorter than the whole header plus the tabs: a two-line title ("You landed on the
+    // Moon!") would otherwise leave the share button half-clipped on the sheet's edge.
+    const head =
+      $('recap-handle').offsetHeight +
+      $('recap').querySelector('.recap-head').offsetHeight +
+      $('tabs').offsetHeight;
+    return Math.min(stageHeight, Math.max(Math.round(stageHeight * 0.6), head));
+  }
   // Collapsed: just the handle, the date line and the result title.
   return $('recap').querySelector('.recap-score').offsetTop + 2;
 }
@@ -363,7 +380,7 @@ function mapPadding() {
   return { right: $('map').getBoundingClientRect().right - panel.left };
 }
 
-function setSheet(state, { refit = true } = {}) {
+function setSheet(state, { refit = true, animate = true } = {}) {
   const recap = $('recap');
   if (!phone.matches) {
     recap.style.height = '';
@@ -372,7 +389,14 @@ function setSheet(state, { refit = true } = {}) {
   }
   sheet = state;
   recap.dataset.sheet = state;
+  // `dragging` switches the height transition off. Without it a resize-driven change animates,
+  // so the header — and the share button in it — slides every time the viewport twitches.
+  if (!animate) recap.classList.add('dragging');
   recap.style.height = `${sheetPx(state)}px`;
+  if (!animate) {
+    void recap.offsetHeight; // commit the new height before transitions come back
+    recap.classList.remove('dragging');
+  }
   if (refit && state !== 'expanded') map.refit(mapPadding());
 }
 
@@ -390,7 +414,11 @@ $('recap').addEventListener('pointerdown', (e) => {
 $('recap').addEventListener('pointermove', (e) => {
   if (!drag) return;
   const now = performance.now();
-  const h = Math.max(sheetPx('collapsed'), Math.min(sheetPx('expanded'), drag.startH + drag.startY - e.clientY));
+  // Rounded: touch coordinates are fractional, and a sheet resting on half a pixel makes the
+  // share button's outlined shape re-rasterise and shimmer.
+  const h = Math.round(
+    Math.max(sheetPx('collapsed'), Math.min(sheetPx('expanded'), drag.startH + drag.startY - e.clientY))
+  );
   $('recap').style.height = `${h}px`;
   drag.v = (drag.lastY - e.clientY) / Math.max(1, now - drag.lastT); // px/ms, positive = upward
   drag.lastY = e.clientY;
@@ -426,7 +454,18 @@ $('recap-handle').addEventListener('keydown', (e) => {
 });
 
 phone.addEventListener('change', () => !$('recap').hidden && setSheet(sheet));
-window.addEventListener('resize', () => !$('recap').hidden && setSheet(sheet, { refit: false }));
+
+// iOS Safari fires resize as its URL bar collapses, often without the stage changing at all.
+// Re-setting the height on every one of those jitters the sheet, so only react to a real
+// change in size, and never mid-drag.
+let lastStageHeight = 0;
+window.addEventListener('resize', () => {
+  if ($('recap').hidden || drag) return;
+  const height = $('map').clientHeight;
+  if (height === lastStageHeight) return;
+  lastStageHeight = height;
+  setSheet(sheet, { refit: false, animate: false });
+});
 
 $('replay').addEventListener('click', () => {
   $('recap').hidden = true;

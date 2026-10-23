@@ -353,12 +353,16 @@ h3 {
   border-radius: var(--radius);
 }
 
+/* Centred with auto margins rather than left:50% + translate:-50%: on a phone the width
+   works out odd, and half a pixel of transform lands the text off the pixel grid, where it
+   renders permanently blurry. Auto margins centre by layout, which stays crisp. */
 .question-card {
   position: absolute;
   top: 16px;
-  left: 50%;
-  translate: -50% 0;
+  left: 0;
+  right: 0;
   width: min(620px, calc(100% - 32px));
+  margin-inline: auto;
   padding: 14px 20px 16px;
   text-align: center;
   animation: rise 0.35s ease-out;
@@ -379,9 +383,10 @@ h3 {
 .pick-bar {
   position: absolute;
   bottom: calc(22px + env(safe-area-inset-bottom));
-  left: 50%;
-  translate: -50% 0;
+  left: 0;
+  right: 0;
   width: min(560px, calc(100% - 32px));
+  margin-inline: auto; /* see .question-card: auto margins keep the text crisp */
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -437,8 +442,13 @@ h3 {
 .question-card.revealing .lead {
   animation: fade-up 0.4s 0.3s ease-out both;
 }
-.question-card.revealing .word {
+/* inline-block lives on the base rule so dropping .revealing can't reflow the line. */
+.question-card .word {
   display: inline-block;
+}
+/* The blur is cleared by removing .revealing once the words have landed (see showQuestion):
+   an element left holding a finished filter animation keeps its blurred raster on iOS. */
+.question-card.revealing .word {
   animation: word-in 0.45s calc(0.6s + var(--i) * 0.09s) ease-out both;
 }
 .pick-bar.revealing {
@@ -1144,9 +1154,11 @@ h3 {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  flex-wrap: wrap; /* stack rather than crowd on a narrow phone, or before the display font swaps in */
+  gap: 10px 12px;
 }
 .recap-actions .sign {
+  flex: none; /* never squeezed into its own arrow tip */
   font-size: 1.1rem;
   padding: 8px 34px 8px 16px;
 }

@@ -14,6 +14,9 @@ const NAME_FIELDS = ['NAME', 'NAME_LONG', 'NAME_EN', 'ADMIN', 'GEOUNIT', 'SUBUNI
 
 // Countries whose whole extent is smaller than this (in square degrees) are too small
 // to click at world zoom, so the map also draws them as a dot at their label point.
+// Which of these features count as official countries (and so get a dot and can be queued
+// as an answer) is decided at runtime by src/not-countries.js — keep that list in step if
+// Natural Earth's feature list changes here. `npm run check` fails if they drift apart.
 const TINY_AREA = 2;
 
 const localPath = process.argv[2];

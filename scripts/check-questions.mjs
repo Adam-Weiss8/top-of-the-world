@@ -2,10 +2,27 @@
 // Exits non-zero if any saved day has problems, so it can gate a deploy.
 import { readdir, readFile } from 'node:fs/promises';
 import { validateDay, dayNumber, dayDate } from '../src/queue.js';
+import { SOVEREIGN_OF, COUNTRY_COUNT, isCountry } from '../src/not-countries.js';
 
 const dir = new URL('../src/data/days/', import.meta.url);
 const countries = JSON.parse(await readFile(new URL('../src/data/countries.json', import.meta.url), 'utf8'));
-const codes = new Set(countries.features.map((f) => f.properties.code));
+const all = new Set(countries.features.map((f) => f.properties.code));
+const codes = new Set([...all].filter(isCountry)); // only official countries can be answers
+
+// Guard against the map data and the not-a-country list drifting apart, which `npm run
+// countries` could do silently if Natural Earth changes upstream.
+const dataProblems = [
+  ...Object.keys(SOVEREIGN_OF).filter((c) => !all.has(c)).map((c) => `${c} is no longer in countries.json`),
+  ...Object.entries(SOVEREIGN_OF)
+    .filter(([, sov]) => !codes.has(sov))
+    .map(([c, sov]) => `${c} points at "${sov}", which isn't a country on the map`),
+  ...(codes.size === COUNTRY_COUNT ? [] : [`the map has ${codes.size} countries, expected ${COUNTRY_COUNT}`]),
+];
+if (dataProblems.length) {
+  console.log('✗ src/not-countries.js doesn\'t match src/data/countries.json:');
+  for (const p of dataProblems) console.log(`    ${p}`);
+  console.log('');
+}
 
 const days = new Map();
 for (const f of (await readdir(dir)).filter((f) => f.endsWith('.json'))) {
@@ -38,4 +55,4 @@ console.log(
     (ready ? `, through Day ${today + ready} (${dayDate(today + ready)}).` : '.')
 );
 if (problems) console.log(`${problems} day(s) need fixing; they'll fall back to the archive mix until then.`);
-process.exitCode = problems ? 1 : 0;
+process.exitCode = problems || dataProblems.length ? 1 : 0;

@@ -3,6 +3,7 @@
 
 import countries from '../data/countries.json';
 import naturalEarthAliases from '../data/aliases.json';
+import { SOVEREIGN_OF, isCountry } from '../not-countries.js';
 
 // Names used by the World Bank, UN, IMF and Wikipedia that Natural Earth doesn't list.
 const EXTRA_ALIASES = {
@@ -36,8 +37,6 @@ const EXTRA_ALIASES = {
   BRN: ['Brunei Darussalam'],
   KGZ: ['Kyrgyz Republic'],
   SVK: ['Slovak Republic'],
-  HKG: ['Hong Kong SAR, China', 'Hong Kong SAR'],
-  MAC: ['Macao SAR, China', 'Macau'],
   PSE: ['State of Palestine', 'West Bank and Gaza', 'Palestinian Territories'],
   TWN: ['Chinese Taipei', 'Taiwan, China', 'Republic of China'],
   TZA: ['United Republic of Tanzania'],
@@ -81,7 +80,10 @@ export function normalize(text, { keepParens = true } = {}) {
     .trim();
 }
 
-const NAMES = Object.fromEntries(countries.features.map((f) => [f.properties.code, f.properties.name]));
+// Only official countries can be queued as answers; see src/not-countries.js.
+const NAMES = Object.fromEntries(
+  countries.features.filter((f) => isCountry(f.properties.code)).map((f) => [f.properties.code, f.properties.name])
+);
 export const COUNTRY_NAMES = NAMES;
 
 const INDEX = new Map();
@@ -95,6 +97,32 @@ for (const [code, names] of Object.entries({ ...naturalEarthAliases })) {
 // Extra aliases win over Natural Earth's for ambiguous short names (e.g. "Congo").
 for (const [code, names] of Object.entries(EXTRA_ALIASES)) {
   if (NAMES[code]) for (const n of names) INDEX.set(normalize(n), code);
+}
+
+// Dependencies and territories turn up in ranked tables constantly (Hong Kong in GDP lists,
+// Puerto Rico in population lists), but they aren't countries, so they get skipped with a
+// note the way "World" is rather than left as a row the author has to notice and delete.
+// Spellings the map data doesn't carry: the World Bank's, and territories that Natural Earth
+// folds into their sovereign at this resolution (France's overseas departments, Gibraltar).
+const NOT_COUNTRY_SPELLINGS = [
+  'Hong Kong SAR, China', 'Hong Kong SAR', 'Macao SAR, China', 'Macau', 'Channel Islands',
+  'Virgin Islands (U.S.)', 'British Virgin Islands', 'Sint Maarten (Dutch part)',
+  'St. Martin (French part)', 'Curacao', 'Faroe Islands', 'Falkland Islands',
+  'Turks and Caicos Islands', 'Northern Mariana Islands', 'Cayman Islands', 'Western Sahara',
+  'Gibraltar', 'Tokelau', 'Svalbard', 'Jan Mayen', 'Svalbard and Jan Mayen', 'Christmas Island',
+  'Cocos (Keeling) Islands', 'Mayotte', 'Réunion', 'Reunion', 'Guadeloupe', 'Martinique',
+  'French Guiana',
+];
+const NOT_COUNTRIES = new Set();
+for (const name of [
+  ...Object.keys(SOVEREIGN_OF).flatMap((code) => [code, ...(naturalEarthAliases[code] ?? [])]),
+  ...NOT_COUNTRY_SPELLINGS,
+]) {
+  for (const keepParens of [true, false]) {
+    const key = normalize(name, { keepParens });
+    // A country's own name or alias always wins (Anguilla and Angola share the abbreviation "Ang.").
+    if (key && !INDEX.has(key)) NOT_COUNTRIES.add(key);
+  }
 }
 
 /** Country code for a name (any common spelling), or null. */
@@ -156,8 +184,9 @@ function parseLine(line) {
 
 /**
  * Parse pasted text into rows: { rows: [{ code, raw, value, tie }], skipped: [names], trimmed }.
- * Header rows and aggregates ("World", "European Union") are skipped; ties come from repeated
- * rank numbers; anything past `limit` matched rows is trimmed.
+ * Header rows, aggregates ("World", "European Union") and territories ("Hong Kong", "Puerto
+ * Rico") are skipped; ties come from repeated rank numbers; anything past `limit` matched rows
+ * is trimmed.
  */
 export function parseTable(text, limit = 20) {
   const rows = [];
@@ -169,10 +198,12 @@ export function parseTable(text, limit = 20) {
     const row = parseLine(line);
     if (!row.code) {
       const key = normalize(row.raw, { keepParens: false });
-      if (!key || AGGREGATES.has(key) || /\b(country|rank|nation|territory|name)\b/.test(key)) {
-        if (key && !/\b(country|rank|nation|territory|name)\b/.test(key)) skipped.push(row.raw);
+      if (!key) continue;
+      if (AGGREGATES.has(key) || NOT_COUNTRIES.has(key)) {
+        skipped.push(row.raw);
         continue;
       }
+      if (/\b(country|rank|nation|territory|name)\b/.test(key)) continue; // a header row
     }
     if (rows.length >= limit) {
       trimmed = true;
