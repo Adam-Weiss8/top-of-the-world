@@ -4,33 +4,6 @@
   "questions": [
     {
       "level": 1,
-      "prompt": "with the largest land area",
-      "source": "World Bank - Land area (sq. km)",
-      "ranking": [
-        ["RUS","16,376,870 km²"],
-        ["CHN","9,326,410 km²"],
-        ["USA","9,147,593 km²"],
-        ["CAN","9,093,507 km²"],
-        ["BRA","8,358,140 km²"],
-        ["AUS","7,692,024 km²"],
-        ["IND","2,973,193 km²"],
-        ["ARG","2,736,690 km²"],
-        ["KAZ","2,699,700 km²"],
-        ["DZA","2,381,741 km²"],
-        ["COD","2,267,048 km²"],
-        ["SAU","2,149,690 km²"],
-        ["MEX","1,943,945 km²"],
-        ["IDN","1,811,570 km²"],
-        ["SDN","1,765,048 km²"],
-        ["LBY","1,759,540 km²"],
-        ["IRN","1,628,550 km²"],
-        ["MNG","1,553,556 km²"],
-        ["PER","1,279,996 km²"],
-        ["TCD","1,259,200 km²"]
-      ]
-    },
-    {
-      "level": 2,
       "prompt": "with the lowest population",
       "source": "United Nations — World Population Prospects",
       "ranking": [
@@ -57,7 +30,7 @@
       ]
     },
     {
-      "level": 3,
+      "level": 2,
       "prompt": "with the most amount of coastline",
       "source": "List of countries and dependencies by length of coastline - Wikipedia",
       "ranking": [
@@ -81,6 +54,32 @@
         ["IND","7,000 km"],
         ["CHL","6,435 km"],
         ["FSM","6,112 km"]
+      ]
+    },
+    {
+      "level": 3,
+      "prompt": "with the second largest land area",
+      "source": "World Bank - Land area (sq. km)",
+      "ranking": [
+        ["CHN","9,326,410 km²"],
+        ["USA","9,147,593 km²"],
+        ["CAN","9,093,507 km²"],
+        ["BRA","8,358,140 km²"],
+        ["AUS","7,692,024 km²"],
+        ["IND","2,973,193 km²"],
+        ["ARG","2,736,690 km²"],
+        ["KAZ","2,699,700 km²"],
+        ["DZA","2,381,741 km²"],
+        ["COD","2,267,048 km²"],
+        ["SAU","2,149,690 km²"],
+        ["MEX","1,943,945 km²"],
+        ["IDN","1,811,570 km²"],
+        ["SDN","1,765,048 km²"],
+        ["LBY","1,759,540 km²"],
+        ["IRN","1,628,550 km²"],
+        ["MNG","1,553,556 km²"],
+        ["PER","1,279,996 km²"],
+        ["TCD","1,259,200 km²"]
       ]
     },
     {
