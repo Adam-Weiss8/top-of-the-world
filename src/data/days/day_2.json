@@ -58,7 +58,7 @@
     },
     {
       "level": 3,
-      "prompt": "with the highest coffee production",
+      "prompt": "with the highest coffee production (freebie if you played day 0 :) )",
       "source": "Production — Coffee - USDA Foreign Agricultural Service (60kg bags)",
       "ranking": [
         ["BRA","63.0 million"],
