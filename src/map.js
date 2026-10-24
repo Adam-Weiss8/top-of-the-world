@@ -27,7 +27,11 @@ const COLORS = {
 };
 
 const SOURCE = 'countries';
-const WORLD = [[-165, -56], [180, 76]];
+// The full span of longitudes, so nothing sits outside the starting view. It used to stop at
+// -165, which cut off everything in the far eastern Pacific: Samoa's own label point is at
+// -172 and Tonga's at -175, so their dots were off-screen, and the islands Fiji and Kiribati
+// keep on the far side of the antimeridian were unreachable.
+const WORLD = [[-180, -56], [180, 76]];
 const BASE_PADDING = 10;
 const BADGE_LIMIT = 10; // rank badges for the top 10 (plus the player's pick), to keep Europe legible
 const GLOW_MS = 1600;
@@ -62,12 +66,33 @@ function boundsOf(codes) {
   ];
 }
 
-// Countries too small to see at world zoom get a clickable dot. Territories never do:
-// a dot in the ocean that picks someone else's country would only mislead.
+// Countries too small to hit at world zoom get a clickable dot at their label point.
+// Territories never do: a dot in the ocean that picks someone else's country would mislead.
+//
+// What counts as too small is measured on the biggest single landmass, NOT on the country's
+// bounding box. A box is the wrong ruler for an archipelago: Kiribati scatters islands of
+// 0.03 square degrees across a span of 5,000, and the Marshall Islands' largest island is
+// smaller than St. Kitts, which gets a dot. Measuring the box left every Pacific island
+// nation without one — the hardest countries on the map to tap.
+const DOT_AREA = 1; // square degrees; at world zoom a degree is about a pixel
+
+// Shoelace area of a polygon's outer ring, in square degrees. Flat lon/lat, so it reads a
+// little small towards the poles — fine for "is this a pixel or two across?".
+const ringArea = (ring) => {
+  let sum = 0;
+  for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+    sum += ring[j][0] * ring[i][1] - ring[i][0] * ring[j][1];
+  }
+  return Math.abs(sum / 2);
+};
+
+const biggestLandmass = ({ type, coordinates }) =>
+  Math.max(...(type === 'Polygon' ? [coordinates] : coordinates).map((poly) => ringArea(poly[0])));
+
 const tinyDots = {
   type: 'FeatureCollection',
   features: countries.features
-    .filter((f) => f.properties.tiny && isCountry(f.properties.code))
+    .filter((f) => isCountry(f.properties.code) && biggestLandmass(f.geometry) < DOT_AREA)
     .map(({ properties: { code, name, lx, ly } }) => ({
       type: 'Feature',
       properties: { code, name },

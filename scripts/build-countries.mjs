@@ -1,5 +1,5 @@
 // Downloads Natural Earth 1:50m country polygons and writes a slim GeoJSON
-// (code, name, label point, tiny flag per feature; coordinates rounded) to src/data/countries.json,
+// (code, name, label point per feature; coordinates rounded) to src/data/countries.json,
 // plus the alternative English names the admin page uses to match pasted tables (src/data/aliases.json).
 //
 //   npm run countries              -> download from GitHub
@@ -12,12 +12,10 @@ const OUT = new URL('../src/data/countries.json', import.meta.url);
 const ALIASES_OUT = new URL('../src/data/aliases.json', import.meta.url);
 const NAME_FIELDS = ['NAME', 'NAME_LONG', 'NAME_EN', 'ADMIN', 'GEOUNIT', 'SUBUNIT', 'BRK_NAME', 'FORMAL_EN', 'NAME_CIAWF', 'NAME_SORT', 'ABBREV'];
 
-// Countries whose whole extent is smaller than this (in square degrees) are too small
-// to click at world zoom, so the map also draws them as a dot at their label point.
-// Which of these features count as official countries (and so get a dot and can be queued
-// as an answer) is decided at runtime by src/not-countries.js — keep that list in step if
-// Natural Earth's feature list changes here. `npm run check` fails if they drift apart.
-const TINY_AREA = 2;
+// Two things are decided at runtime rather than baked in here, from the geometry this writes:
+// which features are official countries (src/not-countries.js — keep that list in step if
+// Natural Earth's feature list changes, `npm run check` fails if they drift apart), and which
+// are too small to click and so need a dot (src/map.js).
 
 const localPath = process.argv[2];
 const raw = localPath
@@ -35,13 +33,6 @@ const roundRing = (ring) => {
   return out;
 };
 const roundPolygon = (rings) => rings.map(roundRing).filter((r) => r.length >= 4);
-
-const extentArea = (geometry) => {
-  const pts = (geometry.type === 'Polygon' ? [geometry.coordinates] : geometry.coordinates).flat(2);
-  const xs = pts.map((p) => p[0]);
-  const ys = pts.map((p) => p[1]);
-  return (Math.max(...xs) - Math.min(...xs)) * (Math.max(...ys) - Math.min(...ys));
-};
 
 // Sovereign countries claim their ISO code first; dependencies sharing it (e.g. Australia's
 // Ashmore and Cartier Islands) fall back to their own Natural Earth code.
@@ -71,7 +62,6 @@ const features = sorted.map((f) => {
       name: p.NAME,
       lx: Math.round(p.LABEL_X * 100) / 100,
       ly: Math.round(p.LABEL_Y * 100) / 100,
-      ...(extentArea(f.geometry) < TINY_AREA ? { tiny: true } : {}),
     },
     geometry,
   };
@@ -81,5 +71,5 @@ await mkdir(new URL('.', OUT), { recursive: true });
 await writeFile(OUT, JSON.stringify({ type: 'FeatureCollection', features }));
 await writeFile(ALIASES_OUT, JSON.stringify(aliases));
 console.log(
-  `Wrote ${features.length} countries (${features.filter((f) => f.properties.tiny).length} tiny) to ${OUT.pathname}`
+  `Wrote ${features.length} features to ${OUT.pathname}`
 );
