@@ -123,7 +123,13 @@ export function createMap(container, { onPick }) {
   const map = new Map({
     container,
     attributionControl: false,
-    renderWorldCopies: false,
+    // The world repeats east-west. Mercator cannot fit 360 degrees on a tall phone — the
+    // map is never allowed to zoom out past the point where the world fills the viewport's
+    // HEIGHT, which on a 390x793 stage leaves only about half the planet across. Without
+    // copies that half is all you get and the Pacific sits behind a hard edge; with them
+    // there is no edge, panning runs on forever and Fiji and Kiribati stop being split in
+    // two by the antimeridian.
+    renderWorldCopies: true,
     dragRotate: false,
     pitchWithRotate: false,
     touchPitch: false,
@@ -206,6 +212,16 @@ export function createMap(container, { onPick }) {
   );
   map.fitBounds(WORLD, { padding: BASE_PADDING, duration: 0 });
 
+  // Copies mean there is no longer an edge to stop a zoom-out, so hold the floor at a single
+  // world: any further out and the map would show two or three Earths side by side. On a
+  // phone this sits below the height limit above, so it changes nothing there.
+  const holdOneWorld = () => {
+    const width = map.getContainer().clientWidth - BASE_PADDING * 2;
+    if (width > 0) map.setMinZoom(Math.log2(width / 512));
+  };
+  holdOneWorld();
+  map.on('resize', holdOneWorld);
+
   map.once('load', () => {
     const ratio = { pixelRatio: 2 };
     map.addImage('ocean-topo', topoPattern({ background: COLORS.ocean, line: COLORS.oceanLine, seed: 0 }), ratio);
@@ -252,6 +268,9 @@ export function createMap(container, { onPick }) {
     const box = (r) => [[x - r, y - r], [x + r, y + r]];
     const dots = map.queryRenderedFeatures(box(12), { layers: ['tiny-dots'] });
     if (dots.length) {
+      // project() already resolves to the copy nearest the centre, and every dot's label
+      // point is a real in-range coordinate, so plain screen distance is right even with
+      // copies rendering either side of the antimeridian.
       const dist = (f) => {
         const p = map.project(f.geometry.coordinates);
         return (p.x - x) ** 2 + (p.y - y) ** 2;
