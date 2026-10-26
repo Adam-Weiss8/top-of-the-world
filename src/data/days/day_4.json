@@ -110,7 +110,7 @@
     },
     {
       "level": 5,
-      "prompt": "that consumes the most seafood",
+      "prompt": "that consumes the most seafood per person",
       "source": "Our World in Data - kg/person/year",
       "ranking": [
         ["MDV","87.30"],
