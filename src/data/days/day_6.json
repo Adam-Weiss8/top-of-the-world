@@ -85,7 +85,7 @@
     },
     {
       "level": 4,
-      "prompt": "with the most urban land area",
+      "prompt": "with the most urban land area (by percent)",
       "source": "https://geofactbook.com/fact/percentage-of-land-area-by-degree-of-urbanization/2024",
       "ranking": [
         ["VAT","100 %"],
