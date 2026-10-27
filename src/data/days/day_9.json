@@ -75,7 +75,7 @@
     },
     {
       "level": 4,
-      "prompt": "with the largest cemetary by acres",
+      "prompt": "with the largest cemetery by acres",
       "source": "Various sources",
       "ranking": [
         ["IRQ","Wadi al-Salam Cemetery (917 hectares)"],
@@ -92,7 +92,7 @@
     },
     {
       "level": 5,
-      "prompt": "where the oldest homosapien fossils were discovered",
+      "prompt": "where the oldest Homosapien fossils were discovered",
       "source": "Smithsonian",
       "ranking": [
         ["MAR","Jebel Irhoud (approximately 315,000 years)"],
