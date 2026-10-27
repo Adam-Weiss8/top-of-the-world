@@ -1,5 +1,10 @@
-# Builds the game and publishes it to GitHub Pages on every push to main.
+# Schedules any newly written days, then builds the game and publishes it to GitHub Pages.
 # A broken queued day fails `npm run check` and stops the deploy, so the live site stays as it was.
+#
+# The scheduling step lives here rather than in its own workflow on purpose: a push made with the
+# default GITHUB_TOKEN deliberately does not trigger other workflows, so a separate job's commit
+# would sit undeployed until somebody else pushed. Doing it inline means one workflow, no
+# cross-triggering, and nothing to guard against looping.
 name: Deploy
 
 on:
@@ -8,13 +13,16 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write # the scheduling step commits the days it assigns
   pages: write
   id-token: write
 
 concurrency:
   group: pages
-  cancel-in-progress: true
+  # Must stay false: cancelling a run midway through committing scheduled days would be messy,
+  # and two writers publishing seconds apart need to be serialised so the second run sees the
+  # first one's commit and takes the next free day rather than the same one.
+  cancel-in-progress: false
 
 jobs:
   deploy:
@@ -24,11 +32,40 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          # the tip of main, not the commit that triggered us, so a queued-up run still
+          # schedules against whatever has landed since
+          ref: main
+          fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
       - run: npm ci
+
+      - name: Schedule any newly written days
+        run: |
+          npm run queue
+          if [ -z "$(git status --porcelain -- src/data)" ]; then
+            echo "Nothing new to schedule."
+            exit 0
+          fi
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -- src/data
+          git commit -m "Schedule newly written days"
+          # someone may have pushed while we were working
+          for attempt in 1 2 3; do
+            if git pull --rebase && git push; then
+              echo "Scheduled days pushed on attempt $attempt."
+              exit 0
+            fi
+            echo "Push attempt $attempt failed, retrying..."
+            sleep 5
+          done
+          echo "::error::Could not push the scheduled days after 3 attempts."
+          exit 1
+
       - run: npm run check
       - run: npm run build
       - uses: actions/configure-pages@v5

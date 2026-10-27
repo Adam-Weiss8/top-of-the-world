@@ -13,16 +13,49 @@ npm run check    # validate every queued day and report how far ahead the queue 
 
 ## Adding questions (the queue)
 
-1. Run `npm run dev` and open **http://localhost:5173/admin.html**. The admin page only exists on the dev server and is never deployed.
-2. The sidebar shows **Upcoming** days, **Today**, and the **Archive**. Click **+ Queue Day N** to start the next day, and put your name in **Questions by**. The game shows "Today's questions by …" on the start screen and recap, and your name is remembered on your computer for next time.
+For non-developers writing questions, hand them **[WRITING.md](WRITING.md)** instead of this
+section — it's the same job with no git or terminal in it.
+
+1. Run `npm run dev` and open **http://localhost:5173/admin.html** (or just double-click
+   **Write questions**, which pulls, installs and opens it for you). The admin page only exists on the dev server and is never deployed.
+2. The sidebar shows **Not published yet**, **Coming up**, **Today**, and the **Archive**. Click **+ Write a new day** to start one, and put your name in **Questions by**. The game shows "Today's questions by …" on the start screen and recap, and your name is remembered on your computer for next time.
    - **Search past questions** (top of the sidebar) before writing one: type a word or two (e.g. `volcano`) to see every saved question containing them, with its climb number, date and Q1–Q5 slot. Click one to open that day. Run `git pull` first so you're searching everyone's latest days.
 3. Each day has five questions, Q1 (level 1, easiest) to Q5 (level 5, hardest). For each question:
    - Type the prompt. It reads as "Click the country …".
    - Type the source.
    - Paste a ranked table into the dashed box: rows copied from Wikipedia or a spreadsheet, or lines like `1. Japan — 111`. Country names are matched automatically, including spellings like "Korea, Rep." and "Côte d'Ivoire". The next column becomes the value. Rows like "World" are skipped, and anything past 20 is dropped.
    - Fix any red rows (pick a country or remove the row), tick **tie** where a row shares the rank above, and use ↑ ↓ to reorder. ▲ ▼ swaps a question's difficulty slot.
-4. **Save** (or Ctrl+S). Incomplete days save as drafts. A day is *ready* when all five questions have a prompt, a source and 10–20 matched answers. **Play preview** opens that day in the game (`/?day=N`) without touching your real progress.
-5. Commit `src/data/days/` and deploy. The top bar warns when fewer than 7 days are queued.
+4. **Save** (or Ctrl+S). Incomplete days save as drafts. A day is *ready* when all five questions have a prompt, a source and 10–20 matched answers. **Play preview** opens it in the game without touching your real progress — `/?day=N` for a scheduled day, `/?set=<id>` for one that isn't scheduled yet.
+5. Press **Publish**. The top bar warns when fewer than 7 days are queued.
+
+### How a day gets its date
+
+Nobody picks a day number, because two people picking the same one is the one thing git can't
+merge. A new day is saved to `src/data/inbox/` under a filename made from the clock and the
+author's name, so two writers can never create the same path and their pushes can never
+conflict. When it lands on main, the deploy workflow runs `npm run queue`
+([scripts/queue-days.mjs](scripts/queue-days.mjs)), which moves each set into the next free
+`day_N.json`, oldest first, and commits that before building.
+
+Two rules keep the schedule stable: oldest set first, and never a day that has already been
+played — so a set pushed late is appended rather than dropped in front of a puzzle somebody has
+already seen. Scheduled days are never rewritten.
+
+Useful while poking at it:
+
+```sh
+npm run queue -- --dry   # what would be scheduled, changing nothing
+npm run queue            # schedule it
+npm run doctor           # what state this copy is in, in plain language
+npm run doctor -- --fix  # reset to a clean copy of GitHub, keeping unpublished work
+```
+
+### Setting up a new writer
+
+Install git and node on their machine, clone the repo, and make a shortcut to **Write
+questions.bat** (Windows) or **Write questions.command** (macOS) somewhere they'll find it.
+Then send them [WRITING.md](WRITING.md). They need push access to the repo; everything else
+the launcher and the Publish button handle.
 
 Day 1 is `LAUNCH` in `src/queue.js` (currently 23 Oct 2026). Days 0, −1 and −2 are the original test questions and form the starting archive. **If a day isn't ready, players get an archive mix:** one random question per level from earlier days, the same for everyone.
 
@@ -40,7 +73,8 @@ In dev mode, `window.totw` exposes the map and journey in the browser console. F
 
 | File | What it does |
 | --- | --- |
-| `src/data/days/day_N.json` | The queued days, one file per day (edited through the admin page). |
+| `src/data/days/day_N.json` | The scheduled days, one file per day. |
+| `src/data/inbox/*.json` | Days written but not yet given a date; `npm run queue` moves them across. |
 | `src/queue.js` | Day numbering (`LAUNCH`), the day-file format, validation. Shared by the game, admin and checker. |
 | `src/questions.js` | Loads every day file into the game. |
 | `src/daily.js` | Picks today's questions (the queued day, or the archive mix), the scoring curve, and colour tiers. |
