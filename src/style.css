@@ -2,6 +2,10 @@
   --paper: #eef1ea;
   --card: #fbfcf8;
   --ink: #22313f;
+  /* Text sitting on a bright accent — the yellow signs, the tier-coloured badges and rank
+     chips. Identical to --ink here, but a dark theme turns --ink bone so text reads on dark
+     cards, and those bright surfaces still need something dark on top of them. */
+  --on-accent: #22313f;
   --muted: #5e6d78;
   --line: #c9d3d6;
   --glacier: #b9d4df;
@@ -22,6 +26,52 @@
   --shadow: 4px 4px 0 var(--ink);
   --radius: 6px;
   color-scheme: light;
+}
+
+/* ---------- Halloween, 29–31 October ----------
+   Set by src/themes.js. --ink turns bone so text reads on the dark cards, and it carries the
+   borders and offset shadows with it; --on-accent stays dark for the text sitting on the
+   pumpkin signs and the tier badges. The tier colours themselves never change — they are the
+   share emoji. */
+:root[data-theme='halloween'] {
+  --paper: #17101f;
+  --card: #241a30;
+  --ink: #f6ecd8;
+  --on-accent: #1b1220;
+  --muted: #a194b0;
+  --line: #4b3a5c;
+  --glacier: #3b2a4d;
+  --sign: #ef8521;
+  /* bright enough to read as text on the dark card: --blaze is the "← you" marker in the
+     ranking and the "start it" link, not just a background */
+  --blaze: #e8503c;
+  --alpenglow: #6b2fa0;
+
+  --sign-off: #4a3f58;
+  --tag-bg: rgba(16, 9, 24, 0.82);
+  --poster-sky-top: #2a1b3d;
+  --poster-sky-bottom: #d9622a;
+  color-scheme: dark;
+}
+/* dark gold has no contrast on a dark card */
+:root[data-theme='halloween'] .pts.gold {
+  color: #f6c21b;
+}
+/* the overlay behind the intro and recap panels is a paper tint, so it has to follow */
+:root[data-theme='halloween'] .overlay {
+  background: color-mix(in srgb, var(--paper) 72%, transparent);
+}
+/* MapLibre ships its attribution on a translucent white pill, which is a bright blob in the
+   corner of a dark map */
+:root[data-theme='halloween'] .maplibregl-ctrl-attrib {
+  background: rgba(26, 18, 36, 0.86);
+  color: var(--ink);
+}
+:root[data-theme='halloween'] .maplibregl-ctrl-attrib a {
+  color: var(--ink);
+}
+:root[data-theme='halloween'] .maplibregl-ctrl-attrib-button {
+  filter: invert(1) hue-rotate(180deg);
 }
 
 * {
@@ -103,7 +153,7 @@ h3 {
   font: 800 1.3rem/1 var(--display);
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: var(--ink);
+  color: var(--on-accent);
   cursor: pointer;
   transition: transform 0.12s;
 }
@@ -141,7 +191,7 @@ h3 {
   color: var(--muted);
 }
 .sign:disabled::after {
-  background: #e3e6e0; /* the face greys out; the ink outline behind it stays */
+  background: var(--sign-off, #e3e6e0); /* the face greys out; the ink outline behind it stays */
 }
 .sign.wide {
   display: block;
@@ -301,6 +351,12 @@ h3 {
 }
 @keyframes badge-in {
   from { scale: 0.4; opacity: 0; }
+}
+.badge.gold,
+.badge.purple,
+.badge.blue,
+.badge.green {
+  color: var(--on-accent);
 }
 .badge.gold { background: var(--gold); }
 .badge.purple { background: #c7a6ee; }
@@ -807,7 +863,7 @@ h3 {
   font: 800 1.05rem/1 var(--display);
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--ink);
+  color: var(--on-accent);
   background: var(--sign);
   border: var(--border);
   box-shadow: 3px 3px 0 var(--ink);
@@ -859,7 +915,7 @@ h3 {
   stroke-dasharray: 4 6;
 }
 .landmark-tag rect {
-  fill: rgba(34, 49, 63, 0.78);
+  fill: var(--tag-bg, rgba(34, 49, 63, 0.78));
 }
 .landmark-tag text {
   font: 600 12px var(--body);
@@ -1021,8 +1077,8 @@ h3 {
   border: var(--border);
   border-radius: var(--radius);
   overflow: hidden;
-  --sky-top: #8fc1df;
-  --sky-bottom: #f6d6c6;
+  --sky-top: var(--poster-sky-top, #8fc1df);
+  --sky-bottom: var(--poster-sky-bottom, #f6d6c6);
 }
 .intro-scene .journey-svg {
   overflow: hidden;
@@ -1069,6 +1125,7 @@ h3 {
 }
 .rules span:first-child {
   background: var(--sign);
+  color: var(--on-accent);
 }
 
 /* ---------- recap ---------- */
@@ -1260,6 +1317,7 @@ h3 {
 }
 .ranking li:first-child .rank {
   background: var(--sign);
+  color: var(--on-accent);
 }
 .ranking li.you {
   background: color-mix(in srgb, var(--blaze) 16%, transparent);
