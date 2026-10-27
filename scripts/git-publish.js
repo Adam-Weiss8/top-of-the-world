@@ -24,6 +24,10 @@ function explain(text) {
   if (/no upstream|does not appear to be a git repository|No such remote/i.test(t)) {
     return "This copy isn't linked to GitHub yet. Ask Adam to finish setting it up — nothing has been lost.";
   }
+  if (/cannot pull with rebase|unstaged changes|cannot rebase: You have/i.test(t)) {
+    // --autostash should make this unreachable, but say something true if it ever shows up
+    return 'Something else on this computer has changed files in the project. Your questions are saved — ask Adam to tidy it up (npm run doctor).';
+  }
   return null;
 }
 
@@ -75,9 +79,13 @@ export async function publish(author) {
   }
 
   // --- bring in anyone else's days -----------------------------------------
+  // --autostash matters more than it looks: we only stage src/data, so anything else the
+  // writer's machine has touched — npm install rewrites package-lock.json on Windows every
+  // single time the launcher runs — would otherwise make rebase refuse to start, and Publish
+  // would fail forever with a message blaming a conflict that doesn't exist.
   const before = await scheduledDays();
   try {
-    await git('pull', '--rebase');
+    await git('pull', '--rebase', '--autostash');
   } catch (e) {
     // The one path that could strand them. Put everything back exactly as it was.
     await git('rebase', '--abort').catch(() => {});
@@ -97,7 +105,7 @@ export async function publish(author) {
     } catch (e) {
       // Classic race: someone pushed between our pull and our push. Rebase once and retry.
       try {
-        await git('pull', '--rebase');
+        await git('pull', '--rebase', '--autostash');
         await git('push');
       } catch (e2) {
         await git('rebase', '--abort').catch(() => {});
