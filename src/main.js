@@ -17,12 +17,15 @@ import {
 
 const $ = (id) => document.getElementById(id);
 
-// In dev, ?day=N previews any queued day (from the admin page) without saving progress.
-const preview = import.meta.env.DEV ? new URLSearchParams(location.search).get('day') : null;
+// In dev, ?day=N previews a queued day and ?set=<id> previews one that hasn't been scheduled
+// yet (both from the admin page), neither of which touches saved progress.
+const params = import.meta.env.DEV ? new URLSearchParams(location.search) : new URLSearchParams();
+const preview = params.get('day');
+const previewSet = params.get('set');
 const key = preview !== null ? dayDate(Number(preview)) : todayKey();
 const number = puzzleNumber(key);
-const { questions, author } = puzzleFor(key);
-const storageKey = preview !== null ? null : `totw2:${key}`;
+let { questions, author } = puzzleFor(key);
+const storageKey = preview !== null || previewSet ? null : `totw2:${key}`;
 const dateLabel = new Date(`${key}T12:00:00`).toLocaleDateString('en-GB', {
   day: 'numeric',
   month: 'short',
@@ -575,7 +578,25 @@ for (const id of ['intro-byline', 'recap-byline']) {
 }
 renderStatus();
 
-map.ready.then(() => {
+map.ready.then(async () => {
+  // Previewing an unscheduled set: swap its questions in before anything is drawn. Dev only —
+  // /api/inbox exists solely on the dev server.
+  if (previewSet) {
+    try {
+      const set = (await fetch('/api/inbox').then((r) => r.json())).find((s) => s.id === previewSet);
+      if (set?.questions?.length) {
+        questions = set.questions;
+        author = set.author ?? null;
+        for (const id of ['intro-byline', 'recap-byline']) {
+          $(id).textContent = author ? `Today’s questions by ${author}` : '';
+          $(id).hidden = !author;
+        }
+        renderStatus();
+      }
+    } catch {
+      // not running against the dev server; fall through to the real puzzle
+    }
+  }
   if (answers.length >= QUESTIONS_PER_DAY) {
     showRecap();
   } else if (answers.length > 0) {

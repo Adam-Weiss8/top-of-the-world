@@ -2,7 +2,7 @@
 // ranked tables, and save them into src/data/days/ through the API in scripts/queue-api.js.
 
 import './admin.css';
-import { dayDate, dayNumber, validateDay, QUESTIONS_PER_DAY, MIN_ANSWERS, MAX_ANSWERS } from '../queue.js';
+import { dayDate, dayNumber, inboxName, validateDay, QUESTIONS_PER_DAY, MIN_ANSWERS, MAX_ANSWERS } from '../queue.js';
 import { parseTable, matchCountry, normalize, COUNTRY_NAMES } from './match.js';
 
 const $ = (id) => document.getElementById(id);
@@ -17,10 +17,27 @@ const fmtDate = (n, opts = { weekday: 'short', day: 'numeric', month: 'short' })
   new Date(`${dayDate(n)}T12:00:00`).toLocaleDateString('en-GB', opts);
 const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
 
-let days = new Map(); // saved days from disk
-let selected = null; // day number being edited
+let days = new Map(); // scheduled days from src/data/days/
+let sets = new Map(); // unscheduled sets from src/data/inbox/, keyed by id
+// What's open: a scheduled day, or a set nobody has given a date yet.
+let selected = null; // { kind: 'day', n } | { kind: 'set', id }
 let draft = null; // editable copy: { day, author, questions: [{ prompt, source, rows: [{ code, raw, value, tie }], note }] }
 let dirty = false;
+
+const isSet = () => selected?.kind === 'set';
+const label = () => (isSet() ? 'this day' : `Day ${selected.n}`);
+
+/**
+ * The first day number the scheduler would hand out. Writers never choose one — this is only
+ * so the editor can say roughly when a set will be played. Mirrors scripts/queue-days.mjs.
+ */
+const nextFreeDay = () => Math.max(today, ...(days.size ? [...days.keys()] : [today])) + 1;
+
+/** Where an unscheduled set is likely to land, given the ones queued ahead of it. */
+function likelyDay(id) {
+  const ahead = [...sets.keys()].sort().indexOf(id);
+  return nextFreeDay() + Math.max(0, ahead);
+}
 
 // Each person's name is remembered on their own computer and pre-filled on new days.
 const AUTHOR_KEY = 'totw-admin-author';
@@ -41,7 +58,7 @@ const rememberAuthor = (name) => {
 
 // ---------- draft <-> file format ----------
 
-function toDraft(day, n) {
+function toDraft(day, n = null) {
   return {
     day: n,
     author: day ? (day.author ?? '') : rememberedAuthor(),
@@ -67,7 +84,8 @@ const ranksOf = (rows) => rows.reduce((acc, r, i) => [...acc, r.tie && i > 0 ? a
 
 function fromDraft(d, { matchedOnly = false } = {}) {
   return {
-    day: d.day,
+    // an unscheduled set has no day number; it gets one when it lands on main
+    ...(d.day === null ? {} : { day: d.day }),
     ...(d.author.trim() ? { author: d.author.trim() } : {}),
     questions: d.questions.map((q, i) => {
       const rows = matchedOnly ? q.rows.filter((r) => r.code) : q.rows;
@@ -86,6 +104,7 @@ const statusOf = (n) => {
   if (!days.has(n)) return 'missing';
   return validateDay(days.get(n), CODES).ok ? 'ready' : 'draft';
 };
+const setStatusOf = (id) => (validateDay(sets.get(id), CODES, { scheduled: false }).ok ? 'ready' : 'draft');
 
 // ---------- summary + sidebar ----------
 
@@ -111,22 +130,38 @@ function renderSidebar() {
   const min = Math.min(today, ...nums);
   const item = (n) => {
     const s = statusOf(n);
-    const label = { ready: '✓ ready', draft: '✎ draft', missing: '— empty' }[s];
-    return `<button class="a-day ${s} ${n === selected ? 'selected' : ''} ${n === today ? 'today' : ''}" data-day="${n}">
+    const mark = { ready: '✓ ready', draft: '✎ draft', missing: '— empty' }[s];
+    const on = selected?.kind === 'day' && selected.n === n;
+    return `<button class="a-day ${s} ${on ? 'selected' : ''} ${n === today ? 'today' : ''}" data-day="${n}">
       <span class="a-day-num">Day ${n}</span><span class="a-day-date">${fmtDate(n)}</span>
-      <span class="a-day-status">${n === today ? 'today · ' : ''}${label}${
+      <span class="a-day-status">${n === today ? 'today · ' : ''}${mark}${
         days.get(n)?.author ? ` · ${esc(days.get(n).author)}` : ''
+      }</span></button>`;
+  };
+  // Unscheduled sets: written, not yet given a date. Writers only ever see these as "waiting",
+  // never as a day number, because the number is decided when they publish.
+  const setItem = (id) => {
+    const s = setStatusOf(id);
+    const on = isSet() && selected.id === id;
+    const when = fmtDate(likelyDay(id));
+    return `<button class="a-day ${s} ${on ? 'selected' : ''}" data-set="${esc(id)}">
+      <span class="a-day-num">${s === 'ready' ? 'Ready to publish' : 'Still writing'}</span>
+      <span class="a-day-date">~ ${when}</span>
+      <span class="a-day-status">${s === 'ready' ? '✓ waiting to publish' : '✎ draft'}${
+        sets.get(id)?.author ? ` · ${esc(sets.get(id).author)}` : ''
       }</span></button>`;
   };
   const upcoming = [];
   for (let n = today + 1; n <= max; n++) upcoming.push(item(n));
   const archive = [];
   for (let n = today - 1; n >= min; n--) if (days.has(n)) archive.push(item(n));
-  const next = max + 1;
+  const waiting = [...sets.keys()].sort().map(setItem);
   $('days').innerHTML = `
-    <h2>Upcoming</h2>
+    <h2>Not published yet</h2>
+    ${waiting.join('') || '<p class="a-empty">Nothing waiting.</p>'}
+    <button class="a-add" data-new="1">+ Write a new day</button>
+    <h2>Coming up</h2>
     ${upcoming.join('') || '<p class="a-empty">Nothing queued yet.</p>'}
-    <button class="a-add" data-day="${next}">+ Queue Day ${next} <span>${fmtDate(next)}</span></button>
     <h2>Today</h2>${item(today)}
     <h2>Archive</h2>${archive.join('') || '<p class="a-empty">No past days.</p>'}`;
 }
@@ -181,32 +216,52 @@ $('search').addEventListener('keydown', (e) => {
 
 // ---------- editor ----------
 
-function selectDay(n) {
-  if (dirty && n !== selected && !confirm(`Discard unsaved changes to Day ${selected}?`)) return;
-  selected = n;
-  draft = toDraft(days.get(n), n);
+function open(next) {
+  const same = selected && next.kind === selected.kind && (next.n ?? next.id) === (selected.n ?? selected.id);
+  if (dirty && !same && !confirm(`Discard unsaved changes to ${label()}?`)) return;
+  selected = next;
+  draft = next.kind === 'set' ? toDraft(sets.get(next.id)) : toDraft(days.get(next.n), next.n);
   dirty = false;
   renderSidebar();
   renderEditor();
-  history.replaceState(null, '', `#day=${n}`);
+  history.replaceState(null, '', next.kind === 'set' ? `#set=${next.id}` : `#day=${next.n}`);
+}
+
+const selectDay = (n) => open({ kind: 'day', n });
+
+/** Start a new set. Its id is the clock plus the writer's name, so nobody can collide. */
+function newSet() {
+  const created = new Date().toISOString();
+  const id = inboxName(created, rememberedAuthor()).replace(/\.json$/, '');
+  sets.set(id, { id, created, author: rememberedAuthor(), questions: [] });
+  open({ kind: 'set', id });
 }
 
 function renderEditor() {
-  const n = selected;
-  const s = statusOf(n);
+  const set = isSet();
+  const s = set ? setStatusOf(selected.id) : statusOf(selected.n);
+  const state = set
+    ? { ready: 'ready — press Publish to send it', draft: 'still being written' }[s]
+    : { ready: 'ready to play', draft: 'draft (not playable yet)', missing: 'not saved yet' }[s];
+  const head = set
+    ? `<h2>A new day</h2>
+       <p>Will be played on or after <b>${fmtDate(likelyDay(selected.id), { weekday: 'long', day: 'numeric', month: 'long' })}</b>
+          · <span class="a-state ${s}">${state}</span></p>`
+    : `<h2>Day ${selected.n}</h2>
+       <p>${fmtDate(selected.n, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+          ${selected.n === today ? ' · <b>today</b>' : selected.n < today ? ' · archive' : ''}
+          · <span class="a-state ${s}">${state}</span></p>`;
+  const exists = set ? sets.has(selected.id) : days.has(selected.n);
   $('editor').innerHTML = `
     <div class="a-editor-head">
       <div>
-        <h2>Day ${n}</h2>
-        <p>${fmtDate(n, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
-          ${n === today ? ' · <b>today</b>' : n < today ? ' · archive' : ''}
-          · <span class="a-state ${s}">${{ ready: 'ready to play', draft: 'draft (not playable yet)', missing: 'not saved yet' }[s]}</span></p>
+        ${head}
         <label class="a-author">Questions by
           <input id="author" value="${esc(draft.author)}" placeholder="Your name" maxlength="60" autocomplete="name" />
         </label>
       </div>
       <div class="a-actions">
-        ${days.has(n) ? '<button class="a-btn ghost" data-action="delete">Delete</button>' : ''}
+        ${exists ? '<button class="a-btn ghost" data-action="delete">Delete</button>' : ''}
         <button class="a-btn ghost" data-action="preview">Play preview ↗</button>
         <button class="a-btn primary" data-action="save" id="save">Save</button>
       </div>
@@ -317,8 +372,11 @@ function applyPaste(i, text) {
 // ---------- events ----------
 
 $('days').addEventListener('click', (e) => {
-  const btn = e.target.closest('[data-day]');
-  if (btn) selectDay(Number(btn.dataset.day));
+  const btn = e.target.closest('[data-day], [data-set], [data-new]');
+  if (!btn) return;
+  if (btn.dataset.new) return newSet();
+  if (btn.dataset.set) return open({ kind: 'set', id: btn.dataset.set });
+  selectDay(Number(btn.dataset.day));
 });
 
 const editor = $('editor');
@@ -378,7 +436,7 @@ editor.addEventListener('click', async (e) => {
       return remove();
     case 'preview':
       if (dirty && !confirm('Preview shows the last saved version. Open it anyway?')) return;
-      return window.open(`/?day=${selected}`, '_blank');
+      return window.open(isSet() ? `/?set=${selected.id}` : `/?day=${selected.n}`, '_blank');
     case 'parse': {
       const area = btn.closest('.a-card').querySelector('.paste');
       applyPaste(i, area.value);
@@ -431,29 +489,61 @@ async function save() {
     editor.querySelector(`.a-card[data-q="${unmatched}"]`).scrollIntoView({ behavior: 'smooth', block: 'center' });
     return;
   }
-  const day = fromDraft(draft);
-  const res = await fetch(`/api/days/${selected}`, {
+  const body = fromDraft(draft);
+  const set = isSet();
+  let stale = null;
+  if (set) {
+    body.created = sets.get(selected.id)?.created ?? new Date().toISOString();
+    // A new set is named before the writer has typed their name, so the first save would
+    // leave it as "-anon". Re-derive the name from whatever they've put in since.
+    const wanted = inboxName(body.created, body.author).replace(/\.json$/, '');
+    if (wanted !== selected.id) {
+      if (sets.has(selected.id)) stale = selected.id;
+      sets.delete(selected.id);
+      selected = { kind: 'set', id: wanted };
+      history.replaceState(null, '', `#set=${wanted}`);
+    }
+  }
+  const url = set ? `/api/inbox/${selected.id}` : `/api/days/${selected.n}`;
+  const res = await fetch(url, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(day),
+    body: JSON.stringify(body),
   });
   if (!res.ok) return toast(`Couldn't save: ${(await res.json()).error}`, true);
-  days.set(selected, day);
+  if (stale) await fetch(`/api/inbox/${stale}`, { method: 'DELETE' });
+
+  if (set) sets.set(selected.id, { id: selected.id, ...body });
+  else days.set(selected.n, body);
   dirty = false;
   renderSummary();
   renderSidebar();
   renderEditor();
-  toast(validateDay(day, CODES).ok ? `Saved Day ${selected}: ready to play` : `Saved Day ${selected} as a draft`);
+
+  const ok = validateDay(body, CODES, { scheduled: !set }).ok;
+  if (set) toast(ok ? 'Saved. Press Publish when you want to send it.' : 'Saved — still a draft, keep going.');
+  else toast(ok ? `Saved Day ${selected.n}: ready to play` : `Saved Day ${selected.n} as a draft`);
 }
 
 async function remove() {
-  if (!confirm(`Delete Day ${selected}? Players would get the archive mix that day.`)) return;
-  await fetch(`/api/days/${selected}`, { method: 'DELETE' });
-  days.delete(selected);
+  const set = isSet();
+  const what = set ? 'this unpublished day' : `Day ${selected.n}`;
+  const note = set ? '' : ' Players would get the archive mix that day.';
+  if (!confirm(`Delete ${what}?${note}`)) return;
+  if (set) {
+    await fetch(`/api/inbox/${selected.id}`, { method: 'DELETE' });
+    sets.delete(selected.id);
+    dirty = false;
+    toast('Deleted');
+    renderSummary();
+    return openSomething();
+  }
+  await fetch(`/api/days/${selected.n}`, { method: 'DELETE' });
+  days.delete(selected.n);
   dirty = false;
-  toast(`Deleted Day ${selected}`);
+  toast(`Deleted Day ${selected.n}`);
   renderSummary();
-  selectDay(selected);
+  selectDay(selected.n);
 }
 
 let toastTimer;
@@ -472,13 +562,62 @@ $('country-names').innerHTML = Object.values(COUNTRY_NAMES)
   .map((name) => `<option value="${esc(name)}"></option>`)
   .join('');
 
-const res = await fetch('/api/days');
-days = new Map((await res.json()).map((d) => [d.day, d]));
+async function reload() {
+  const [dayList, setList] = await Promise.all([
+    fetch('/api/days').then((r) => r.json()),
+    fetch('/api/inbox').then((r) => r.json()),
+  ]);
+  days = new Map(dayList.map((d) => [d.day, d]));
+  sets = new Map(setList.map((s) => [s.id, s]));
+}
+
+/** Open something sensible: whatever you were writing, else a fresh day. */
+function openSomething() {
+  const waiting = [...sets.keys()].sort();
+  if (waiting.length) return open({ kind: 'set', id: waiting[0] });
+  return newSet();
+}
+
+// ---------- publish ----------
+
+async function publish() {
+  const btn = $('publish');
+  if (dirty && !confirm('Save your changes first? Press Cancel, then Save.')) return;
+  btn.disabled = true;
+  const was = btn.textContent;
+  btn.textContent = 'Publishing…';
+  try {
+    const out = await fetch('/api/publish', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ author: draft?.author || rememberedAuthor() }),
+    }).then((r) => r.json());
+    toast(out.message, !out.ok);
+    if (out.detail) console.warn('publish detail:', out.detail);
+    if (out.ok) {
+      await reload();
+      renderSummary();
+      renderSidebar();
+      if ((isSet() && !sets.has(selected.id)) || !selected) openSomething();
+      else renderEditor();
+    }
+  } catch (e) {
+    toast('Something went wrong and nothing was changed. Send this to Adam: ' + e.message, true);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = was;
+  }
+}
+
+$('publish').addEventListener('click', publish);
+
+// ---------- start ----------
+
+await reload();
 renderSummary();
-const fromHash = Number(new URLSearchParams(location.hash.slice(1)).get('day'));
-const firstGap = (() => {
-  let n = today + 1;
-  while (statusOf(n) === 'ready') n++;
-  return n;
-})();
-selectDay(Number.isInteger(fromHash) && location.hash ? fromHash : firstGap);
+const hash = new URLSearchParams(location.hash.slice(1));
+const fromDay = Number(hash.get('day'));
+const fromSet = hash.get('set');
+if (fromSet && sets.has(fromSet)) open({ kind: 'set', id: fromSet });
+else if (location.hash && Number.isInteger(fromDay)) selectDay(fromDay);
+else openSomething();

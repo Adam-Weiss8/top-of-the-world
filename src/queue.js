@@ -32,13 +32,26 @@ export const dayDate = (n) => new Date(utc(LAUNCH) + (n - 1) * DAY_MS).toISOStri
 export const fileName = (n) => `day_${n}.json`;
 
 /**
- * Problems with a day, as { errors: [string], byQuestion: [[string] × 5] }.
- * `codes` is the set of country codes on the map.
+ * Filename for an unscheduled set in src/data/inbox/. The timestamp makes it sort by when it
+ * was started, and the author's name makes it unique — two people writing at the same moment
+ * still can't produce the same path, which is what keeps a push from ever conflicting.
  */
-export function validateDay(day, codes) {
+export function inboxName(created, author) {
+  // seconds included so the same person starting two sets a minute apart still can't clash
+  const stamp = created.replace(/[:-]/g, '').replace(/\.\d+Z?$/, '').slice(0, 15); // 20261027T143205
+  const who = (author || 'anon').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 24);
+  return `${stamp}-${who || 'anon'}.json`;
+}
+
+/**
+ * Problems with a day, as { errors: [string], byQuestion: [[string] × 5] }.
+ * `codes` is the set of country codes on the map. An unscheduled set has no day number yet,
+ * so `{ scheduled: false }` skips that one check and applies everything else unchanged.
+ */
+export function validateDay(day, codes, { scheduled = true } = {}) {
   const errors = [];
   const byQuestion = Array.from({ length: QUESTIONS_PER_DAY }, () => []);
-  if (!Number.isInteger(day?.day)) errors.push('missing day number');
+  if (scheduled && !Number.isInteger(day?.day)) errors.push('missing day number');
   const qs = day?.questions ?? [];
   if (qs.length !== QUESTIONS_PER_DAY) errors.push(`has ${qs.length} questions (needs ${QUESTIONS_PER_DAY})`);
 

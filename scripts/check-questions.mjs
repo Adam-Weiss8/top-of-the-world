@@ -24,10 +24,21 @@ if (dataProblems.length) {
   console.log('');
 }
 
+// Keep the filename alongside each day so a clash can name both culprits. A plain
+// Map(entries) would let the second file silently overwrite the first and lose a whole set.
 const days = new Map();
+const from = new Map();
+const clashes = [];
 for (const f of (await readdir(dir)).filter((f) => f.endsWith('.json'))) {
   const day = JSON.parse(await readFile(new URL(f, dir), 'utf8'));
+  if (days.has(day.day)) clashes.push(`day ${day.day} is claimed by both ${from.get(day.day)} and ${f}`);
+  else from.set(day.day, f);
   days.set(day.day, day);
+}
+if (clashes.length) {
+  console.log('✗ Two files claim the same day — one set of questions would be dropped silently:');
+  for (const c of clashes) console.log(`    ${c}`);
+  console.log('');
 }
 
 const pad = (n) => String(n).padStart(2, '0');
@@ -55,4 +66,4 @@ console.log(
     (ready ? `, through Day ${today + ready} (${dayDate(today + ready)}).` : '.')
 );
 if (problems) console.log(`${problems} day(s) need fixing; they'll fall back to the archive mix until then.`);
-process.exitCode = problems || dataProblems.length ? 1 : 0;
+process.exitCode = problems || dataProblems.length || clashes.length ? 1 : 0;

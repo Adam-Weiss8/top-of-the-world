@@ -8,7 +8,9 @@
     "build": "vite build",
     "preview": "vite preview",
     "countries": "node scripts/build-countries.mjs",
-    "check": "node scripts/check-questions.mjs"
+    "check": "node scripts/check-questions.mjs",
+    "queue": "node scripts/queue-days.mjs",
+    "doctor": "node scripts/doctor.mjs"
   },
   "dependencies": {
     "maplibre-gl": "^6.15.0"
