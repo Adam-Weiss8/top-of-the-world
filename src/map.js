@@ -5,9 +5,13 @@ import countries from './data/countries.json';
 import { topoPattern, graticule } from './topo.js';
 import { pointsFor, tier } from './daily.js';
 import { SOVEREIGN_OF, isCountry } from './not-countries.js';
+import { THEME } from './themes.js';
 
 setWorkerUrl(workerUrl);
 
+// A season can retint the board (see src/themes.js). The reveal colours below are deliberately
+// not themeable: they are the share emoji 🟨🟪🟦🟩, so recolouring them would desync what a
+// player pastes into a group chat from what they actually saw.
 const COLORS = {
   ocean: '#b9d4df',
   oceanLine: 'rgba(255,255,255,0.55)',
@@ -19,6 +23,7 @@ const COLORS = {
   coastGlow: '#ffffff',
   grid: 'rgba(44,62,80,0.18)',
   ink: '#22313f',
+  ...THEME.map,
   // reveal colours, matching the score tiers (🟨🟪🟦🟩)
   gold: '#f6c21b',
   purple: '#a685d1',

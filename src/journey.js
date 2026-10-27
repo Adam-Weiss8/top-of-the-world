@@ -11,6 +11,7 @@
 
 import { MAX_TOTAL } from './daily.js';
 import { LANDMARKS, formatAltitude } from './landmarks.js';
+import { THEME } from './themes.js';
 
 const NS = 'http://www.w3.org/2000/svg';
 const K = 3; // world units per point
@@ -118,40 +119,79 @@ const ROCKET = `
   <circle cx="0" cy="-50" r="8" fill="#9fd3ff" stroke="#22313f" stroke-width="2.5"/>
   <g class="passenger" transform="translate(0 -44.5)">${pixels(HEAD, 2.2)}</g>`;
 
-const MOON_SVG = `
-  <circle cx="${MOON.cx}" cy="${MOON.cy}" r="${MOON.r + 26}" fill="rgba(220,230,240,0.08)"/>
-  <circle cx="${MOON.cx}" cy="${MOON.cy}" r="${MOON.r}" fill="#c9ced2" stroke="#22313f" stroke-width="3"/>
-  <path d="M${MOON.cx + 40},${MOON.cy - MOON.r + 4} A${MOON.r} ${MOON.r} 0 0 1 ${MOON.cx + MOON.r - 4},${MOON.cy + 30}"
+// ---------- themeable artwork ----------
+// A season swaps the drawings; the wrappers, animation classes and flight paths stay put, so
+// a witch flies the jet's route on the jet's keyframes. See src/themes.js.
+
+const DEFAULT_GROUND = {
+  grass: '#93ab8a', grassEdge: '#7f9877',
+  rockFar: '#b7c7d1', rockMid: '#c7d4dc', rockNear: '#6f8290', rockShade: '#5d707e',
+  snow: '#fff', snowShade: '#e3edf3',
+  trail: 'rgba(255,255,255,0.75)', trailDone: '#f6c21b',
+};
+
+const DEFAULT_ART = {
+  // nose-left, contrail streaming back to the right
+  jet: `<path d="M0,0 H140" stroke="rgba(255,255,255,0.8)" stroke-width="3" stroke-linecap="round"/>
+  <path d="M-16,0 L10,-3 L14,0 L10,3 Z M-2,-1 L-8,-9 L-4,-9 L4,-1 Z M-2,1 L-8,9 L-4,9 L4,1 Z M-14,-1 L-18,-6 L-15,-6 L-11,-1 Z"
+        fill="#f4f6f2" stroke="#22313f" stroke-width="1"/>`,
+  // nose-right
+  concorde: `<path d="M0,0 H-150" stroke="rgba(255,255,255,0.75)" stroke-width="3" stroke-linecap="round"/>
+  <path d="M26,0 L-4,-3 L-14,-12 L-12,-3 L-18,-2 L-18,2 L-12,3 L-14,12 L-4,3 Z" fill="#f4f6f2" stroke="#22313f" stroke-width="1.2" stroke-linejoin="round"/>`,
+  mirrorConcorde: false,
+  bird: (bx, by) =>
+    `<path d="M${bx - 7},${by - 3} Q${bx - 3},${by - 6} ${bx},${by} Q${bx + 3},${by - 6} ${bx + 7},${by - 3}"
+           fill="none" stroke="#22313f" stroke-width="2" stroke-linecap="round"/>`,
+  ufo: `<ellipse cx="0" cy="-12" rx="12" ry="11" fill="rgba(159,211,255,0.7)" stroke="#22313f" stroke-width="1.5"/>
+  <ellipse cx="0" cy="0" rx="30" ry="8" fill="#aab4ba" stroke="#22313f" stroke-width="2"/>
+  <circle cx="-16" cy="1" r="2.5" fill="#f6c21b"/><circle cx="0" cy="3" r="2.5" fill="#f6c21b"/><circle cx="16" cy="1" r="2.5" fill="#f6c21b"/>
+  <path d="M-10,8 L-24,60 L24,60 L10,8 Z" fill="rgba(246,194,27,0.12)"/>`,
+  aurora: `<path d="M-600,0 C-400,-60 -200,40 0,-20 S400,-70 600,0 S900,-40 1000,-10 L1000,40 C800,10 600,60 400,20 S0,70 -200,30 S-500,60 -600,40 Z" fill="rgba(110,231,183,0.22)"/>
+  <path d="M-600,-30 C-350,-90 -150,10 100,-50 S500,-90 1000,-40 L1000,-10 C700,-60 400,-10 150,-30 S-300,-20 -600,-5 Z" fill="rgba(167,139,250,0.18)"/>`,
+  tree: (x, s = 1) =>
+    `<g transform="translate(${x} 2) scale(${s})"><rect x="-2" y="-8" width="4" height="8" fill="#6b4f33"/>` +
+    '<polygon points="-12,-6 0,-34 12,-6" fill="#3f6b4f"/><polygon points="-9,-18 0,-42 9,-18" fill="#4c7d5c"/></g>',
+  cloud: '#fff',
+  moon: ({ cx, cy, r }) => `
+  <circle cx="${cx}" cy="${cy}" r="${r + 26}" fill="rgba(220,230,240,0.08)"/>
+  <circle cx="${cx}" cy="${cy}" r="${r}" fill="#c9ced2" stroke="#22313f" stroke-width="3"/>
+  <path d="M${cx + 40},${cy - r + 4} A${r} ${r} 0 0 1 ${cx + r - 4},${cy + 30}"
         fill="none" stroke="rgba(255,255,255,0.35)" stroke-width="6" stroke-linecap="round"/>
-  <circle cx="${MOON.cx - 50}" cy="${MOON.cy - 70}" r="22" fill="#b3b9be"/>
-  <circle cx="${MOON.cx + 40}" cy="${MOON.cy - 10}" r="30" fill="#b3b9be"/>
-  <circle cx="${MOON.cx - 20}" cy="${MOON.cy + 60}" r="16" fill="#b3b9be"/>
-  <circle cx="${MOON.cx + 90}" cy="${MOON.cy - 90}" r="10" fill="#b3b9be"/>`;
+  <circle cx="${cx - 50}" cy="${cy - 70}" r="22" fill="#b3b9be"/>
+  <circle cx="${cx + 40}" cy="${cy - 10}" r="30" fill="#b3b9be"/>
+  <circle cx="${cx - 20}" cy="${cy + 60}" r="16" fill="#b3b9be"/>
+  <circle cx="${cx + 90}" cy="${cy - 90}" r="10" fill="#b3b9be"/>`,
+  extras: null,
+};
+
+const ART = { ...DEFAULT_ART, ...(THEME.art ?? {}) };
+const GROUND = { ...DEFAULT_GROUND, ...(THEME.art?.ground ?? {}) };
+
+const MOON_SVG = ART.moon(MOON);
 
 function cloud(x, y, s = 1, cls = '') {
   return `<g class="cloud ${cls}" transform="translate(${x} ${y}) scale(${s})">
-    <ellipse cx="0" cy="0" rx="46" ry="16" fill="#fff"/>
-    <circle cx="-18" cy="-10" r="17" fill="#fff"/><circle cx="10" cy="-16" r="21" fill="#fff"/>
-    <circle cx="32" cy="-6" r="13" fill="#fff"/></g>`;
+    <ellipse cx="0" cy="0" rx="46" ry="16" fill="${ART.cloud}"/>
+    <circle cx="-18" cy="-10" r="17" fill="${ART.cloud}"/><circle cx="10" cy="-16" r="21" fill="${ART.cloud}"/>
+    <circle cx="32" cy="-6" r="13" fill="${ART.cloud}"/></g>`;
 }
 
-// Small V-shaped birds that flap and drift across.
+// Small flyers that flap and drift across; the wrapper carries the animation, ART the drawing.
 const birds = (x, y, n, s = 1) =>
   `<g class="flock" transform="translate(${x} ${y}) scale(${s})">` +
   Array.from({ length: n }, (_, i) => {
     const bx = i * 22 - (i % 2) * 6;
     const by = (i % 2) * 10 - i * 3;
-    return `<path class="bird" style="animation-delay:${(i * 0.17).toFixed(2)}s" d="M${bx - 7},${by - 3} Q${bx - 3},${by - 6} ${bx},${by} Q${bx + 3},${by - 6} ${bx + 7},${by - 3}" fill="none" stroke="#22313f" stroke-width="2" stroke-linecap="round"/>`;
+    return `<g class="bird" style="animation-delay:${(i * 0.17).toFixed(2)}s">${ART.bird(bx, by)}</g>`;
   }).join('') +
   '</g>';
 
-const tree = (x, s = 1) =>
-  `<g transform="translate(${x} 2) scale(${s})"><rect x="-2" y="-8" width="4" height="8" fill="#6b4f33"/>` +
-  '<polygon points="-12,-6 0,-34 12,-6" fill="#3f6b4f"/><polygon points="-9,-18 0,-42 9,-18" fill="#4c7d5c"/></g>';
+const tree = (x, s = 1) => ART.tree(x, s);
 
-const CONCORDE = `<g class="concorde" transform="translate(0 ${Y(284)})">
-  <path d="M0,0 H-150" stroke="rgba(255,255,255,0.75)" stroke-width="3" stroke-linecap="round"/>
-  <path d="M26,0 L-4,-3 L-14,-12 L-12,-3 L-18,-2 L-18,2 L-12,3 L-14,12 L-4,3 Z" fill="#f4f6f2" stroke="#22313f" stroke-width="1.2" stroke-linejoin="round"/></g>`;
+// This leg flies east, so a sprite drawn nose-left gets mirrored to face the right way.
+const CONCORDE = `<g class="concorde" transform="translate(0 ${Y(284)})">${
+  ART.mirrorConcorde ? `<g transform="scale(-1 1)">${ART.concorde}</g>` : ART.concorde
+}</g>`;
 
 const SKYDIVER = `<g transform="translate(70 ${Y(378) + 30})"><g class="parachute">
   <path d="M-22,-30 Q0,-58 22,-30 Z" fill="#f08a5d" stroke="#22313f" stroke-width="1.5"/>
@@ -159,15 +199,9 @@ const SKYDIVER = `<g transform="translate(70 ${Y(378) + 30})"><g class="parachut
   <path d="M-22,-30 L-2,-8 M22,-30 L2,-8 M0,-30 L0,-8" stroke="#22313f" stroke-width="0.8"/>
   <rect x="-3" y="-9" width="6" height="9" fill="#2f6f9f"/><rect x="-2.5" y="-13" width="5" height="4" fill="#f1c7a5"/></g></g>`;
 
-const AURORA = `<g class="aurora" transform="translate(0 ${Y(455)})">
-  <path d="M-600,0 C-400,-60 -200,40 0,-20 S400,-70 600,0 S900,-40 1000,-10 L1000,40 C800,10 600,60 400,20 S0,70 -200,30 S-500,60 -600,40 Z" fill="rgba(110,231,183,0.22)"/>
-  <path d="M-600,-30 C-350,-90 -150,10 100,-50 S500,-90 1000,-40 L1000,-10 C700,-60 400,-10 150,-30 S-300,-20 -600,-5 Z" fill="rgba(167,139,250,0.18)"/></g>`;
+const AURORA = `<g class="aurora" transform="translate(0 ${Y(455)})">${ART.aurora}</g>`;
 
-const UFO = `<g transform="translate(110 ${Y(840)})"><g class="ufo">
-  <ellipse cx="0" cy="-12" rx="12" ry="11" fill="rgba(159,211,255,0.7)" stroke="#22313f" stroke-width="1.5"/>
-  <ellipse cx="0" cy="0" rx="30" ry="8" fill="#aab4ba" stroke="#22313f" stroke-width="2"/>
-  <circle cx="-16" cy="1" r="2.5" fill="#f6c21b"/><circle cx="0" cy="3" r="2.5" fill="#f6c21b"/><circle cx="16" cy="1" r="2.5" fill="#f6c21b"/>
-  <path d="M-10,8 L-24,60 L24,60 L10,8 Z" fill="rgba(246,194,27,0.12)"/></g></g>`;
+const UFO = `<g transform="translate(110 ${Y(840)})"><g class="ufo">${ART.ufo}</g></g>`;
 
 const satellite = (x, y, s = 1) => `<g class="drift" transform="translate(${x} ${y}) scale(${s})">
   <rect x="-34" y="-5" width="24" height="10" fill="#2f6f9f" stroke="#22313f" stroke-width="1.5"/>
@@ -180,10 +214,7 @@ const ISS = `<g class="drift" transform="translate(70 ${Y(600)})">
   ${[-56, -36, 24, 44].map((x) => `<rect x="${x}" y="-22" width="14" height="44" fill="#2f6f9f" stroke="#22313f" stroke-width="1.5"/>`).join('')}
   <rect x="-14" y="-7" width="28" height="14" rx="3" fill="#f4f6f2" stroke="#22313f" stroke-width="1.5"/></g>`;
 
-const JET = `<g class="jet" transform="translate(0 ${Y(222)})">
-  <path d="M0,0 H140" stroke="rgba(255,255,255,0.8)" stroke-width="3" stroke-linecap="round"/>
-  <path d="M-16,0 L10,-3 L14,0 L10,3 Z M-2,-1 L-8,-9 L-4,-9 L4,-1 Z M-2,1 L-8,9 L-4,9 L4,1 Z M-14,-1 L-18,-6 L-15,-6 L-11,-1 Z"
-        fill="#f4f6f2" stroke="#22313f" stroke-width="1"/></g>`;
+const JET = `<g class="jet" transform="translate(0 ${Y(222)})">${ART.jet}</g>`;
 
 // Deterministic sprinkle of stars, in screen space.
 function starfield(count, h) {
@@ -226,24 +257,25 @@ export function createJourney(container, { mode = 'play' } = {}) {
       </g>
     </g>
     <g class="world">
-      <polygon points="-900,0 -420,-330 -60,0" fill="#b7c7d1"/>
-      <polygon points="380,0 700,-380 1100,0" fill="#b7c7d1"/>
-      <polygon points="-1300,0 -900,-220 -600,0" fill="#c7d4dc"/>
-      <polygon points="900,0 1250,-260 1600,0" fill="#c7d4dc"/>
+      <polygon points="-900,0 -420,-330 -60,0" fill="${GROUND.rockFar}"/>
+      <polygon points="380,0 700,-380 1100,0" fill="${GROUND.rockFar}"/>
+      <polygon points="-1300,0 -900,-220 -600,0" fill="${GROUND.rockMid}"/>
+      <polygon points="900,0 1250,-260 1600,0" fill="${GROUND.rockMid}"/>
       ${cloud(-380, -150, 1.4, 'slow')}${cloud(620, -120, 1.2)}${cloud(900, -230, 1.5, 'slow')}
-      <polygon points="-260,0 200,-600 660,0" fill="#6f8290"/>
-      <polygon points="200,-600 660,0 430,0 300,-260 240,-470" fill="#5d707e"/>
+      <polygon points="-260,0 200,-600 660,0" fill="${GROUND.rockNear}"/>
+      <polygon points="200,-600 660,0 430,0 300,-260 240,-470" fill="${GROUND.rockShade}"/>
       <path d="M-180,-60 Q200,-90 580,-60 M-100,-150 Q200,-180 500,-150 M-20,-250 Q200,-275 420,-250 M70,-360 Q200,-380 330,-360"
             fill="none" stroke="rgba(255,255,255,0.14)" stroke-width="3"/>
-      <polygon points="200,-600 148,-534 172,-526 188,-546 206,-520 228,-542 252,-530" fill="#fff"/>
-      <polygon points="200,-600 252,-530 228,-542 222,-556" fill="#e3edf3"/>
-      <rect x="-2000" y="0" width="4400" height="900" fill="#93ab8a"/>
-      <rect x="-2000" y="0" width="4400" height="10" fill="#7f9877"/>
+      <polygon points="200,-600 148,-534 172,-526 188,-546 206,-520 228,-542 252,-530" fill="${GROUND.snow}"/>
+      <polygon points="200,-600 252,-530 228,-542 222,-556" fill="${GROUND.snowShade}"/>
+      <rect x="-2000" y="0" width="4400" height="900" fill="${GROUND.grass}"/>
+      <rect x="-2000" y="0" width="4400" height="10" fill="${GROUND.grassEdge}"/>
       ${[-520, -470, -430, -330, -300, 690, 730, 780, 860, 905].map((x, i) => tree(x, 0.8 + (i % 3) * 0.2)).join('')}
       <polyline class="trail" points="${TRAIL.map((p) => p.join(',')).join(' ')}" fill="none"
-                stroke="rgba(255,255,255,0.75)" stroke-width="3" stroke-dasharray="6 6" stroke-linecap="round"/>
+                stroke="${GROUND.trail}" stroke-width="3" stroke-dasharray="6 6" stroke-linecap="round"/>
       <polyline class="trail-done" points="${TRAIL.map((p) => p.join(',')).join(' ')}" fill="none"
-                stroke="#f6c21b" stroke-width="4" stroke-linecap="round"/>
+                stroke="${GROUND.trailDone}" stroke-width="4" stroke-linecap="round"/>
+      ${ART.extras ? ART.extras({ trailPoint, trailLength: TRAIL_LENGTH }) : ''}
       <g transform="translate(200 -600)">
         <line x1="0" y1="0" x2="0" y2="-26" stroke="#22313f" stroke-width="2.5"/>
         <polygon class="wave" points="0,-26 18,-20 0,-14" fill="#d63a2f"/>
@@ -687,10 +719,10 @@ export function createJourney(container, { mode = 'play' } = {}) {
 
 // ---------- sky colours by points ----------
 
-const SKY_TOP = [
+const SKY_TOP = THEME.sky?.top ?? [
   [0, '#8fc1df'], [200, '#78acd4'], [330, '#3f74ad'], [440, '#13234a'], [520, '#060a18'], [1000, '#04060d'],
 ];
-const SKY_BOTTOM = [
+const SKY_BOTTOM = THEME.sky?.bottom ?? [
   [0, '#f6d6c6'], [200, '#d6eaf4'], [330, '#8fbfe0'], [440, '#2d5a92'], [520, '#0d1834'], [1000, '#070b16'],
 ];
 
