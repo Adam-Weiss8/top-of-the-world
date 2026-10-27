@@ -1,0 +1,71 @@
+{
+  "day": 9,
+  "author": "A. Weiss",
+  "questions": [
+    {
+      "level": 1,
+      "prompt": "that consumes the most chocolate per capita",
+      "source": "ERND Snacks",
+      "ranking": [
+        ["CHE","8.8 kg"],
+        ["DEU","8.4 kg"],
+        ["IRL","8.3 kg"],
+        ["GBR","8.2 kg"],
+        ["NOR","8.0 kg"],
+        ["SWE","7.9 kg"],
+        ["DNK","7.5 kg"],
+        ["NLD","7.4 kg"],
+        ["FIN","7.2 kg"],
+        ["BEL","6.8 kg"]
+      ]
+    },
+    {
+      "level": 2,
+      "prompt": "with the most species of bats",
+      "source": "World Population Review",
+      "ranking": [
+        ["IDN","225"],
+        ["COL","217"],
+        ["ECU","173"],
+        ["VEN","172"],
+        ["HND","170"],
+        ["PER","159"],
+        ["THA","146"],
+        ["MEX","136"],
+        ["BRA","135"],
+        ["BOL","133"],
+        ["MYS","125"],
+        ["COD","120"],
+        ["CRI","120",12],
+        ["IND","114"],
+        ["CHN","112"],
+        ["KEN","110"],
+        ["TZA","108"],
+        ["PAN","108",17],
+        ["GUY","107"],
+        ["MMR","102"]
+      ]
+    },
+    {
+      "level": 3,
+      "prompt": "",
+      "source": "",
+      "ranking": [
+      ]
+    },
+    {
+      "level": 4,
+      "prompt": "",
+      "source": "",
+      "ranking": [
+      ]
+    },
+    {
+      "level": 5,
+      "prompt": "",
+      "source": "",
+      "ranking": [
+      ]
+    }
+  ]
+}
