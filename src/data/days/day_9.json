@@ -48,23 +48,69 @@
     },
     {
       "level": 3,
-      "prompt": "",
-      "source": "",
+      "prompt": "that produces the most pumpkins",
+      "source": "atlas big",
       "ranking": [
+        ["IND","9,330,691"],
+        ["CHN","7,652,952"],
+        ["EGY","1,275,383"],
+        ["RUS","1,163,235"],
+        ["UKR","1,105,900"],
+        ["USA","934,922"],
+        ["BGD","831,384"],
+        ["ESP","770,770"],
+        ["TUR","741,952"],
+        ["ITA","583,000"],
+        ["MEX","568,591"],
+        ["NER","517,704"],
+        ["IDN","514,702"],
+        ["DZA","476,580"],
+        ["POL","425,200"],
+        ["MWI","421,380"],
+        ["FRA","379,910"],
+        ["PAK","378,125"],
+        ["CUB","321,401"],
+        ["KOR","306,851"]
       ]
     },
     {
       "level": 4,
-      "prompt": "",
-      "source": "",
+      "prompt": "with the largest cemetary by acres",
+      "source": "Various sources",
       "ranking": [
+        ["IRQ","Wadi al-Salam Cemetery (917 hectares)"],
+        ["USA","Rose Hills Memorial Park (567 hectares)"],
+        ["IRN","Behesht-e Zahra Cemetery (424 hectares)"],
+        ["DEU","Ohlsdorf Cemetery (391 hectares)"],
+        ["AUS","Rookwood Cemetery (314 hectares)"],
+        ["TUR","Karacaahmet Cemetery (300 hectares)"],
+        ["AUT","Vienna Central Cemetery (250 hectares)"],
+        ["GBR","Brookwood Cemetery (220 hectares)"],
+        ["POL","Central Cemetery, Szczecin (172 hectares)"],
+        ["EGY","Cairo Necropolis"]
       ]
     },
     {
       "level": 5,
-      "prompt": "",
-      "source": "",
+      "prompt": "where the oldest homosapien fossils were discovered",
+      "source": "Smithsonian",
       "ranking": [
+        ["MAR","Jebel Irhoud (approximately 315,000 years)"],
+        ["ZAF","Florisbad (approximately 259,000 years; classification debated)"],
+        ["ETH","Omo Kibish (at least 233,000 years)"],
+        ["GRC","Apidima Cave (over 210,000 years; disputed)"],
+        ["ISR","Misliya Cave (approximately 177,000–194,000 years)"],
+        ["SDN","Singa (approximately 133,000 years; classification debated)"],
+        ["TZA","Laetoli Ngaloba (approximately 120,000 years; classification debated)"],
+        ["CHN","Fuyan Cave (approximately 80,000–120,000 years; dating debated)"],
+        ["SAU","Al Wusta (approximately 85,000 years)"],
+        ["LAO","Tam Pà Ling (approximately 68,000–86,000 years)"],
+        ["IDN","Lida Ajer (approximately 63,000–73,000 years)"],
+        ["FRA","Grotte Mandrin (approximately 54,000 years; disputed)"],
+        ["DEU","Ranis (approximately 45,000–47,000 years)"],
+        ["CZE","Zlatý kůň (over 45,000 years)"],
+        ["RUS","Ust’-Ishim (approximately 45,000 years)"],
+        ["BGR","Bacho Kiro Cave (approximately 43,000–46,000 years)"]
       ]
     }
   ]
