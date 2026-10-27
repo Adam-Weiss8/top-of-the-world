@@ -63,8 +63,13 @@ jobs:
             echo "Push attempt $attempt failed, retrying..."
             sleep 5
           done
-          echo "::error::Could not push the scheduled days after 3 attempts."
-          exit 1
+          # Deliberately not fatal. If this can't push — most likely because Settings > Actions
+          # > Workflow permissions is read-only — the sets simply stay in the inbox and the next
+          # push tries again. Failing here instead would stop the site deploying at all, which
+          # is a much worse outcome than a day arriving late.
+          echo "::error::Could not push the scheduled days. They stay in the inbox and will be retried on the next push. Check Settings > Actions > General > Workflow permissions is set to read and write."
+          git reset --soft HEAD~1
+          exit 0
 
       - run: npm run check
       - run: npm run build
