@@ -52,10 +52,21 @@ npm run doctor -- --fix  # reset to a clean copy of GitHub, keeping unpublished 
 
 ### Setting up a new writer
 
-Install git and node on their machine, clone the repo, and make a shortcut to **Write
+Install git and node on their machine, **clone** the repo, and make a shortcut to **Write
 questions.bat** (Windows) or **Write questions.command** (macOS) somewhere they'll find it.
 Then send them [WRITING.md](WRITING.md). They need push access to the repo; everything else
 the launcher and the Publish button handle.
+
+On macOS, two things to get right:
+
+- **Clone it, don't download the ZIP.** A ZIP loses the executable bit, so the `.command`
+  file won't do anything when double-clicked. If that's already happened, one command fixes
+  it: `chmod +x "Write questions.command"`.
+- The first double-click opens Terminal and may ask them to allow it. After that it just runs.
+  Dragging the file to the Dock gives them a one-click icon.
+
+If the launcher says node isn't installed when it is, they've probably installed it since the
+Terminal window was last opened — closing Terminal and double-clicking again picks it up.
 
 Day 1 is `LAUNCH` in `src/queue.js` (currently 23 Oct 2026). Days 0, −1 and −2 are the original test questions and form the starting archive. **If a day isn't ready, players get an archive mix:** one random question per level from earlier days, the same for everyone.
 

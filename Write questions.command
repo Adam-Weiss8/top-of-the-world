@@ -15,6 +15,7 @@ if ! command -v git >/dev/null 2>&1; then
 fi
 if ! command -v npm >/dev/null 2>&1; then
   echo "  Node isn't installed on this computer yet."
+  echo "  If you just installed it, close Terminal and double-click this again."
   echo "  Ask Adam to set it up. Nothing is broken."
   echo
   read -r -p "  Press return to close." _

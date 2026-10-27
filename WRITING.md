@@ -6,11 +6,15 @@ writer, write five questions, press **Publish**.
 ## Every time you want to write
 
 1. Double-click **Write questions** in the project folder.
-   (A black window opens — that's normal. Leave it open while you work.)
+   - On Windows that's **Write questions.bat**; on a Mac it's **Write questions.command**.
+   - A window full of text opens — that's normal. Leave it open while you work.
+   - On a Mac the very first time, it may ask whether to allow it. Say yes.
 2. Your browser opens the question writer.
 3. Write a day.
 4. Press **Publish**.
-5. Close the black window. Done.
+5. Close the window. Done.
+
+Tip: drag **Write questions** to your taskbar or Dock, so it's one click next time.
 
 You can't clash with anyone else, even if you're both writing at the same moment. Your day
 simply joins the end of the queue.
