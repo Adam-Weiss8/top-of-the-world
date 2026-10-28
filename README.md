@@ -105,3 +105,24 @@ In dev mode, `window.totw` exposes the map and journey in the browser console. F
 
 - [ ] Check every figure in `questions.js` against its `source`. The current values, especially ranks 11–20, are placeholders.
 - [ ] Queue up days with the admin page, and set `LAUNCH` in `src/queue.js` to the real launch date.
+
+## Analytics
+
+Visits are counted by [GoatCounter](https://www.goatcounter.com) — cookieless, no personal
+data, so no consent banner. The dashboard is at `https://<site-code>.goatcounter.com`, and the
+site code appears in exactly one place: the snippet in `index.html`.
+
+On top of page visits, [src/analytics.js](src/analytics.js) sends two events:
+
+| Event | When |
+| --- | --- |
+| `started` | somebody presses **Start the climb** |
+| `finished` | somebody confirms their fifth answer |
+
+`finished` is deliberately *not* hooked to `showRecap()`, which also runs when a finished day is
+reopened and every time a player re-watches their climb — counting there would inflate the
+number every time someone revisits. Both events no-op in dev builds and on `?day=` / `?set=`
+preview links, so writing and checking questions never looks like playing.
+
+Ad blockers will stop the snippet for some visitors, so treat the numbers as a trend rather
+than a census.

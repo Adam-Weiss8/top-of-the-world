@@ -3,6 +3,7 @@ import { createMap, countryName } from './map.js';
 import { createJourney } from './journey.js';
 import { kmFor, formatAltitude, landmarkReached, travellerFor, START_EMOJI } from './landmarks.js';
 import { rankingOf } from './questions.js';
+import { track } from './analytics.js';
 import { dayDate } from './queue.js';
 import {
   todayKey,
@@ -141,6 +142,7 @@ async function confirmPick() {
   const before = total();
   answers.push({ code, points, rank });
   save();
+  if (answers.length === QUESTIONS_PER_DAY) track('finished', 'Finished all five');
   map.lock();
   $('question-card').hidden = true;
   $('pick-bar').hidden = true;
@@ -568,6 +570,7 @@ $('confirm').addEventListener('click', () => {
 $('share').addEventListener('click', share);
 $('start').addEventListener('click', () => {
   $('intro').hidden = true;
+  track('started', 'Started a climb');
   showQuestion();
 });
 
