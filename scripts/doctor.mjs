@@ -15,6 +15,7 @@ import { promisify } from 'node:util';
 const run = promisify(execFile);
 const REPO = fileURLToPath(new URL('../', import.meta.url));
 const INBOX = fileURLToPath(new URL('../src/data/inbox/', import.meta.url));
+const DATA = fileURLToPath(new URL('../src/data/', import.meta.url));
 const fix = process.argv.includes('--fix');
 
 const git = async (...args) => (await run('git', args, { cwd: REPO, windowsHide: true })).stdout.trim();
@@ -58,6 +59,18 @@ if (!fix) {
 // ---------- --fix ----------
 console.log('Putting this copy back to a clean copy of GitHub, keeping your unpublished days...\n');
 
+// Copy ALL of src/data aside, not just the inbox. The reset below throws away local
+// commits, and a day can easily be sitting in one: a Publish that committed and then failed
+// to push leaves exactly that. Losing somebody's questions to a repair command would be far
+// worse than the problem being repaired.
+const rescue = await mkdtemp(join(tmpdir(), 'totw-rescue-'));
+await cp(DATA, rescue, { recursive: true });
+console.log(`  copied everything in src/data aside, to ${rescue}`);
+if (ahead && ahead !== '0') {
+  console.log(`  note: ${ahead} change(s) had been saved here but never reached GitHub.`);
+  console.log('        They are in that folder. Check it before deleting it.');
+}
+
 let stash = null;
 if (inbox.length) {
   stash = await mkdtemp(join(tmpdir(), 'totw-inbox-'));
@@ -81,3 +94,5 @@ if (stash) {
 
 console.log(`\nDone. Branch is ${await tryGit('rev-parse', '--abbrev-ref', 'HEAD')}, matching GitHub.`);
 console.log('Start writing again with the Write questions icon, and press Publish when you are ready.');
+console.log(`
+Everything src/data held before the repair is in ${rescue} if anything looks missing.`);
