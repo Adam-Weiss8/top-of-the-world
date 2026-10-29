@@ -1,0 +1,325 @@
+{
+  "created": "2026-10-29T00:08:51.379Z",
+  "author": "C. Pedraja",
+  "questions": [
+    {
+      "level": 1,
+      "prompt": "with the most Men's World Cup appearances",
+      "source": "https://worldpopulationreview.com/country-rankings/most-world-cups-by-country",
+      "ranking": [
+        [
+          "DEU",
+          "8"
+        ],
+        [
+          "BRA",
+          "7"
+        ],
+        [
+          "ITA",
+          "6"
+        ],
+        [
+          "ARG",
+          "6"
+        ],
+        [
+          "FRA",
+          "4"
+        ],
+        [
+          "NLD",
+          "3"
+        ],
+        [
+          "HUN",
+          "2"
+        ],
+        [
+          "URY",
+          "2"
+        ],
+        [
+          "ESP",
+          "1"
+        ],
+        [
+          "SWE",
+          "1"
+        ],
+        [
+          "HRV",
+          "1"
+        ]
+      ]
+    },
+    {
+      "level": 2,
+      "prompt": "with the largest road network",
+      "source": "https://en.wikipedia.org/wiki/List_of_countries_by_road_network_size",
+      "ranking": [
+        [
+          "IND",
+          "6,700,000"
+        ],
+        [
+          "USA",
+          "6,586,610"
+        ],
+        [
+          "CHN",
+          "5,490,400"
+        ],
+        [
+          "BRA",
+          "2,000,000"
+        ],
+        [
+          "RUS",
+          "1,579,291"
+        ],
+        [
+          "JPN",
+          "1,218,772"
+        ],
+        [
+          "FRA",
+          "1,053,215"
+        ],
+        [
+          "CAN",
+          "1,042,300"
+        ],
+        [
+          "AUS",
+          "977,874"
+        ],
+        [
+          "MEX",
+          "836,603"
+        ],
+        [
+          "DEU",
+          "830,000"
+        ],
+        [
+          "ZAF",
+          "750,000"
+        ],
+        [
+          "THA",
+          "702,989"
+        ],
+        [
+          "ESP",
+          "683,175"
+        ],
+        [
+          "MYS",
+          "589,320"
+        ],
+        [
+          "SWE",
+          "573,134"
+        ],
+        [
+          "VNM",
+          "570,448"
+        ],
+        [
+          "IDN",
+          "548,097"
+        ],
+        [
+          "ITA",
+          "487,700"
+        ],
+        [
+          "FIN",
+          "454,000"
+        ]
+      ]
+    },
+    {
+      "level": 3,
+      "prompt": "with the highest population density",
+      "source": "https://en.wikipedia.org/wiki/List_of_countries_and_dependencies_by_population_density",
+      "ranking": [
+        [
+          "MCO",
+          "19,428"
+        ],
+        [
+          "SGP",
+          "8,290"
+        ],
+        [
+          "VAT",
+          "2,205"
+        ],
+        [
+          "BHR",
+          "2,034"
+        ],
+        [
+          "MDV",
+          "1,759"
+        ],
+        [
+          "MLT",
+          "1,686"
+        ],
+        [
+          "BGD",
+          "1,333"
+        ],
+        [
+          "PSE",
+          "892"
+        ],
+        [
+          "BRB",
+          "657"
+        ],
+        [
+          "TWN",
+          "656"
+        ],
+        [
+          "MUS",
+          "637"
+        ],
+        [
+          "NRU",
+          "597"
+        ],
+        [
+          "RWA",
+          "578"
+        ],
+        [
+          "LBN",
+          "568"
+        ],
+        [
+          "SMR",
+          "560"
+        ],
+        [
+          "BDI",
+          "547"
+        ],
+        [
+          "NLD",
+          "541"
+        ],
+        [
+          "KOR",
+          "530"
+        ],
+        [
+          "ISR",
+          "468"
+        ],
+        [
+          "COM",
+          "466"
+        ]
+      ]
+    },
+    {
+      "level": 4,
+      "prompt": "with largest Buddhist populations",
+      "source": "https://en.wikipedia.org/wiki/Buddhism_by_country",
+      "ranking": [
+        [
+          "THA",
+          "67,620,000"
+        ],
+        [
+          "CHN",
+          "53,380,000"
+        ],
+        [
+          "MMR",
+          "47,210,000"
+        ],
+        [
+          "JPN",
+          "46,990,000"
+        ],
+        [
+          "VNM",
+          "22,580,000"
+        ],
+        [
+          "KHM",
+          "16,240,000"
+        ],
+        [
+          "LKA",
+          "15,700,000"
+        ],
+        [
+          "KOR",
+          "9,850,000"
+        ],
+        [
+          "IND",
+          "9,550,000"
+        ],
+        [
+          "MYS",
+          "6,400,000"
+        ]
+      ]
+    },
+    {
+      "level": 5,
+      "prompt": "with the oldest active leader",
+      "source": "https://en.wikipedia.org/wiki/List_of_state_leaders_by_age",
+      "ranking": [
+        [
+          "CMR",
+          "93 years"
+        ],
+        [
+          "PSE",
+          "90 years, 351 days"
+        ],
+        [
+          "SAU",
+          "90 years, 305 days"
+        ],
+        [
+          "TGO",
+          "87 years"
+        ],
+        [
+          "MWI",
+          "86 years, 106 days"
+        ],
+        [
+          "KWT",
+          "86 years, 35 days"
+        ],
+        [
+          "ITA",
+          "85 years"
+        ],
+        [
+          "CIV",
+          "84 years, 304 days"
+        ],
+        [
+          "GNQ",
+          "84 years, 149 days"
+        ],
+        [
+          "ZWE",
+          "84 years, 47 days"
+        ]
+      ]
+    }
+  ]
+}
