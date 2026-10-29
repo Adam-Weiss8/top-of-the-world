@@ -4,20 +4,20 @@
   "questions": [
     {
       "level": 1,
-      "prompt": "with the most Men's World Cup appearances",
+      "prompt": "with the most Men's Fifa World Cup Finals appearances",
       "source": "https://worldpopulationreview.com/country-rankings/most-world-cups-by-country",
       "ranking": [
         ["DEU","8"],
         ["BRA","7"],
+        ["ARG","7",2],
         ["ITA","6"],
-        ["ARG","6"],
         ["FRA","4"],
         ["NLD","3"],
         ["HUN","2"],
-        ["URY","2"],
-        ["ESP","1"],
+        ["URY","2",7],
+        ["ESP","2",7],
         ["SWE","1"],
-        ["HRV","1"]
+        ["HRV","1",10]
       ]
     },
     {
@@ -77,7 +77,7 @@
     {
       "level": 4,
       "prompt": "with largest Buddhist populations",
-      "source": "https://en.wikipedia.org/wiki/Buddhism_by_country",
+      "source": "https://worldpopulationreview.com/country-rankings/buddhist-countries",
       "ranking": [
         ["THA","67,620,000"],
         ["CHN","53,380,000"],
@@ -88,7 +88,17 @@
         ["LKA","15,700,000"],
         ["KOR","9,850,000"],
         ["IND","9,550,000"],
-        ["MYS","6,400,000"]
+        ["MYS","6,400,000"],
+        ["LAO","4,700,000"],
+        ["TWN","4,500,000"],
+        ["USA","4,400,000"],
+        ["NPL","2,400,000"],
+        ["IDN","1,900,000"],
+        ["MNG","1,700,000"],
+        ["SGP","1,07,000"],
+        ["BGD","1,000,000"],
+        ["AUS","670,000"],
+        ["CAN","660,000"]
       ]
     },
     {
