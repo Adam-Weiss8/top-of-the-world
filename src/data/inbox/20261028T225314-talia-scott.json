@@ -1,6 +1,6 @@
 {
   "created": "2026-10-28T22:53:14.743Z",
-  "author": "Talia_Scott",
+  "author": "Talia Scott",
   "questions": [
     {
       "level": 1,
@@ -179,7 +179,7 @@
     {
       "level": 3,
       "prompt": "longest average school day",
-      "source": "",
+      "source": "https://worldpopulationreview.com/country-rankings/average-school-day-length-by-country",
       "ranking": [
         [
           "CHN",
@@ -313,8 +313,7 @@
         ],
         [
           "CHE",
-          "7:13 AM",
-          8
+          "7:13 AM"
         ],
         [
           "CZE",
@@ -354,8 +353,7 @@
         ],
         [
           "POL",
-          "7:25AM",
-          18
+          "7:25AM"
         ],
         [
           "PHL",
