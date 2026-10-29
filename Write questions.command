@@ -22,11 +22,18 @@ if ! command -v npm >/dev/null 2>&1; then
   exit 1
 fi
 
+# A previous run may have been interrupted part-way through an update, which leaves the copy
+# in a state where Publish refuses to work. These are no-ops if all is well.
+git rebase --abort >/dev/null 2>&1
+git merge --abort >/dev/null 2>&1
+
 echo "  Getting everyone's latest questions..."
 if ! git pull --rebase --autostash; then
+  # Never leave a half-finished update behind - that's what strands people.
+  git rebase --abort >/dev/null 2>&1
   echo
-  echo "  Couldn't reach GitHub, so you may not have the newest questions."
-  echo "  You can still write - press Publish when you're back online."
+  echo "  Couldn't get everyone's latest questions just now."
+  echo "  Your own work is safe. You can still write, and press Publish later."
   echo
 fi
 

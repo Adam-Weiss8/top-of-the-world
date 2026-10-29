@@ -23,12 +23,19 @@ if errorlevel 1 (
   exit /b 1
 )
 
+rem A previous run may have been interrupted part-way through an update, which leaves the
+rem copy in a state where Publish refuses to work. These are no-ops if all is well.
+git rebase --abort >nul 2>nul
+git merge --abort >nul 2>nul
+
 echo   Getting everyone's latest questions...
 git pull --rebase --autostash
 if errorlevel 1 (
+  rem Never leave a half-finished update behind - that's what strands people.
+  git rebase --abort >nul 2>nul
   echo.
-  echo   Couldn't reach GitHub, so you may not have the newest questions.
-  echo   You can still write - press Publish when you're back online.
+  echo   Couldn't get everyone's latest questions just now.
+  echo   Your own work is safe. You can still write, and press Publish later.
   echo.
 )
 
