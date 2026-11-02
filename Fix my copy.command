@@ -17,6 +17,21 @@ if ! command -v git >/dev/null 2>&1; then
   exit 1
 fi
 
+# This only means anything inside the project folder. Run from anywhere else and every git
+# command below would quietly fail while still reporting success.
+if [ ! -f package.json ] || [ ! -d src/data ] || ! git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+  echo "  This file needs to live in the Top of the World project folder -"
+  echo "  the one containing \"Write questions\" - and be double-clicked there."
+  echo
+  echo "  Right now it is in:"
+  echo "      $(pwd)"
+  echo
+  echo "  Move it next to \"Write questions\" and double-click it again."
+  echo
+  read -r -p "  Press return to close." _
+  exit 1
+fi
+
 BACKUP="rescued-questions/$(date +%Y%m%d-%H%M%S)"
 echo "  1. Copying everything in src/data to $BACKUP"
 mkdir -p "$BACKUP"
