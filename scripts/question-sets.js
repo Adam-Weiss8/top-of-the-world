@@ -27,3 +27,17 @@ export async function scheduledFingerprints(daysDir) {
   }
   return out;
 }
+
+/** Same, but from day files already read out of git (name -> JSON text). */
+export function fingerprintsFromText(entries) {
+  const out = new Map();
+  for (const text of entries) {
+    try {
+      const day = JSON.parse(text);
+      out.set(fingerprint(day), day.day);
+    } catch {
+      // ignore anything unparseable
+    }
+  }
+  return out;
+}

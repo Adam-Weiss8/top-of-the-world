@@ -6,6 +6,7 @@
 import { execFile } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
+import { setAsidePublishedSets, standDown } from './publish-safety.js';
 
 const run = promisify(execFile);
 const REPO = fileURLToPath(new URL('../', import.meta.url));
@@ -57,6 +58,17 @@ export async function publish(author) {
     return fail("This copy isn't linked to GitHub yet. Ask Adam to finish setting it up — nothing has been lost.", e.stderr || e.message);
   }
 
+  // --- head off the state that strands people ------------------------------
+  // Anything in this copy's inbox that has already been scheduled would otherwise be
+  // committed as a change to a file the remote deleted, which rebase cannot resolve.
+  let alreadyLive = [];
+  try {
+    await git('fetch', 'origin');
+    alreadyLive = await setAsidePublishedSets(git);
+  } catch {
+    // offline, or no remote yet; the push below reports it properly
+  }
+
   // --- commit whatever is new under src/data -------------------------------
   try {
     await git('add', '--', 'src/data');
@@ -90,13 +102,22 @@ export async function publish(author) {
   try {
     await git('pull', '--rebase', '--autostash');
   } catch (e) {
-    // The one path that could strand them. Put everything back exactly as it was.
-    await git('rebase', '--abort').catch(() => {});
     const known = explain(e.stderr || e.message);
-    if (known) return fail(known, e.stderr || e.message);
+    if (known) {
+      await git('rebase', '--abort').catch(() => {});
+      return fail(known, e.stderr || e.message);
+    }
+    // Two people changed the same day. There is no right answer to whose wording wins, so the
+    // one already published stays — other people may have seen it — and this copy is put back
+    // in step rather than left stuck. Everything written here is kept first.
+    //
+    // This used to leave the writer on a detached HEAD, where every later Publish hit the
+    // same conflict and failed identically. Standing down is the whole point: being able to
+    // carry on matters more than getting this one edit through.
+    const kept = await standDown(git);
     return fail(
-      'Somebody else changed the same day while you were working on it, so this cannot be sent as it is. Double-click "Fix my copy" in the project folder — your version is kept in the rescued-questions folder — then make your change again.',
-      e.stderr || e.message
+      'Somebody else changed the same day while you were working on it, so theirs is the one that stays. Nothing of yours was lost — it is in the rescued-questions folder. Open the day again and make your change on top of theirs.',
+      `conflict; kept in ${kept}\n${e.stderr || e.message}`
     );
   }
   const pulled = (await scheduledDays()) - before;
@@ -122,13 +143,20 @@ export async function publish(author) {
   }
 
   const sent = ahead !== '0' || staged;
+  const live =
+    alreadyLive.length === 0
+      ? ''
+      : ` ${alreadyLive.length === 1 ? 'One day you had here was' : `${alreadyLive.length} days you had here were`}` +
+        ` already published (Day ${alreadyLive.join(', Day ')}), so ${alreadyLive.length === 1 ? 'it was' : 'they were'} tidied away.`;
   return {
     ok: true,
     pulled,
     sent,
+    alreadyLive,
     message:
       (sent ? 'Published. Your day is on its way.' : 'Nothing new of yours to publish.') +
-      (pulled > 0 ? ` Picked up ${pulled} new day${pulled === 1 ? '' : 's'} from everyone else.` : ''),
+      (pulled > 0 ? ` Picked up ${pulled} new day${pulled === 1 ? '' : 's'} from everyone else.` : '') +
+      live,
   };
 }
 
