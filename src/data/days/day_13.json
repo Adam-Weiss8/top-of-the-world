@@ -4,8 +4,8 @@
   "questions": [
     {
       "level": 1,
-      "prompt": "with the most wine produce",
-      "source": "https://worldpopulationreview.com/country-rankings/wine-producing-countries",
+      "prompt": "that produces the most wine (total)",
+      "source": "https://worldpopulationreview.com/country-rankings/wine-producing-countries (Hectoliters)",
       "ranking": [
         ["ITA","47.4M"],
         ["FRA","35.9M"],
@@ -31,7 +31,7 @@
     },
     {
       "level": 2,
-      "prompt": "with most amount of Miss Universe",
+      "prompt": "with most amount of Miss Universe wins",
       "source": "https://worldpopulationreview.com/country-rankings/countries-with-most-miss-universe",
       "ranking": [
         ["USA","9"],
@@ -58,7 +58,7 @@
     },
     {
       "level": 3,
-      "prompt": "Countries by motorcycles",
+      "prompt": "with the most motorcycles",
       "source": "https://worldpopulationreview.com/country-rankings/motorcycles-by-country",
       "ranking": [
         ["IND","221M"],
@@ -113,7 +113,7 @@
     {
       "level": 5,
       "prompt": "with the highest divorce rate",
-      "source": "https://worldpopulationreview.com/country-rankings/divorce-rates-by-country",
+      "source": "https://worldpopulationreview.com/country-rankings/divorce-rates-by-country (divorces per 1k people)",
       "ranking": [
         ["LIE","4.9"],
         ["BLR","3.7"],
