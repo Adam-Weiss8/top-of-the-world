@@ -47,10 +47,9 @@ git fetch origin
 git reset --hard origin/main >/dev/null 2>&1
 
 echo "  4. Putting your unpublished questions back"
-if [ -d "$BACKUP/inbox" ]; then
-  mkdir -p src/data/inbox
-  cp -R "$BACKUP/inbox/." src/data/inbox/ 2>/dev/null || true
-fi
+# Only the ones that have not already gone live - putting a published set back would
+# schedule the same questions a second time.
+node scripts/restore-inbox.mjs "$BACKUP"
 
 echo
 echo "  Done. This copy is on \"$(git rev-parse --abbrev-ref HEAD)\" and matches GitHub again."

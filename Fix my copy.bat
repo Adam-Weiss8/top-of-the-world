@@ -57,7 +57,9 @@ git fetch origin
 git reset --hard origin/main >nul 2>nul
 
 echo   4. Putting your unpublished questions back
-if exist "%BACKUP%\inbox" xcopy /E /I /Q /Y "%BACKUP%\inbox" "src\data\inbox" >nul
+rem Only the ones that have not already gone live - putting a published set back would
+rem schedule the same questions a second time.
+node scripts/restore-inbox.mjs "%BACKUP%"
 
 echo.
 for /f %%B in ('git rev-parse --abbrev-ref HEAD') do set BR=%%B

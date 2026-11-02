@@ -252,10 +252,21 @@ function renderEditor() {
           ${selected.n === today ? ' · <b>today</b>' : selected.n < today ? ' · archive' : ''}
           · <span class="a-state ${s}">${state}</span></p>`;
   const exists = set ? sets.has(selected.id) : days.has(selected.n);
+  // Editing a day somebody else wrote is the one thing that can still clash: if they are in
+  // it at the same time, only one version can win. Publish keeps the other safe rather than
+  // losing it, but it is cheaper to warn first than to sort it out afterwards.
+  const theirs = !set && days.get(selected.n)?.author;
+  const mine = (draft.author || rememberedAuthor()).trim().toLowerCase();
+  const warn =
+    theirs && theirs.trim().toLowerCase() !== mine
+      ? `<p class="a-warn-owner">This day was written by <b>${esc(theirs)}</b>. If they are editing it right
+         now, only one of you can win — message them first, or write a new day instead.</p>`
+      : '';
   $('editor').innerHTML = `
     <div class="a-editor-head">
       <div>
         ${head}
+        ${warn}
         <label class="a-author">Questions by
           <input id="author" value="${esc(draft.author)}" placeholder="Your name" maxlength="60" autocomplete="name" />
         </label>
