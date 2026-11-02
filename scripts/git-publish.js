@@ -46,7 +46,10 @@ export async function publish(author) {
     return fail("This folder isn't set up as a GitHub copy yet. Ask Adam to finish setting it up.", e.stderr || e.message);
   }
   if (branch === 'HEAD') {
-    return fail('This copy is in an odd state that needs Adam to sort out. Nothing has been changed.', 'detached HEAD');
+    return fail(
+      'This copy got stuck part-way through an update. Double-click "Fix my copy" in the project folder, then press Publish again — your questions are kept safe.',
+      'detached HEAD'
+    );
   }
   try {
     await git('remote', 'get-url', 'origin');
@@ -92,7 +95,7 @@ export async function publish(author) {
     const known = explain(e.stderr || e.message);
     if (known) return fail(known, e.stderr || e.message);
     return fail(
-      'Someone else changed the same day at the same time. Nothing on your computer has been changed, and your questions are safe — send this to Adam.',
+      'Somebody else changed the same day while you were working on it, so this cannot be sent as it is. Double-click "Fix my copy" in the project folder — your version is kept in the rescued-questions folder — then make your change again.',
       e.stderr || e.message
     );
   }
