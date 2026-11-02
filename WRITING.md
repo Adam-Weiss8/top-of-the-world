@@ -68,3 +68,13 @@ If Adam asks you to, open the black window and type this, then read him what it 
 ```
 npm run doctor
 ```
+
+## If Publish says something is wrong
+
+Double-click **Fix my copy** in the project folder, then press Publish again.
+
+It copies everything you have written into a `rescued-questions` folder first, so nothing can
+be lost, then puts your copy back in step with everyone else's. It is safe to run at any time,
+even if nothing is broken.
+
+If Publish still complains after that, send Adam a screenshot.
