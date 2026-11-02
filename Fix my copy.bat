@@ -18,6 +18,27 @@ if errorlevel 1 (
   exit /b 1
 )
 
+rem This only means anything inside the project folder. Run from anywhere else and every
+rem git command below would quietly fail while still reporting success.
+if not exist "package.json" goto :wrongplace
+if not exist "srcdata" goto :wrongplace
+git rev-parse --is-inside-work-tree >nul 2>nul
+if errorlevel 1 goto :wrongplace
+goto :rightplace
+
+:wrongplace
+echo   This file needs to live in the Top of the World project folder -
+echo   the one containing "Write questions" - and be double-clicked there.
+echo.
+echo   Right now it is in:
+echo       %CD%
+echo.
+echo   Move it next to "Write questions" and double-click it again.
+echo.
+pause
+exit /b 1
+
+:rightplace
 for /f "tokens=2 delims==" %%I in ('wmic os get localdatetime /value 2^>nul') do set DT=%%I
 set STAMP=%DT:~0,8%-%DT:~8,6%
 set BACKUP=rescued-questions\%STAMP%
