@@ -1,0 +1,133 @@
+{
+  "day": 14,
+  "author": "A. Weiss",
+  "questions": [
+    {
+      "level": 1,
+      "prompt": "that produces the most total cheese",
+      "source": "FAOSTAT",
+      "ranking": [
+        ["USA","6,627,649 tonnes"],
+        ["DEU","3,041,858 tonnes"],
+        ["FRA","2,215,753 tonnes"],
+        ["ITA","1,344,110 tonnes"],
+        ["POL","1,063,590 tonnes"],
+        ["NLD","1,019,240 tonnes"],
+        ["TUR","830,204 tonnes"],
+        ["RUS","791,956 tonnes"],
+        ["EGY","765,662 tonnes"],
+        ["CAN","599,949 tonnes"],
+        ["ESP","535,875 tonnes"],
+        ["GBR","509,900 tonnes"],
+        ["DNK","496,700 tonnes"],
+        ["ARG","477,436 tonnes"],
+        ["NZL","375,000 tonnes"],
+        ["AUS","374,812 tonnes"],
+        ["VEN","372,113 tonnes"],
+        ["IRN","354,106 tonnes"],
+        ["UZB","325,453 tonnes"],
+        ["BLR","307,551 tonnes"]
+      ]
+    },
+    {
+      "level": 2,
+      "prompt": "in the pacific islands with the least land area",
+      "source": "World Bank - Land area data",
+      "ranking": [
+        ["NRU","21 km²"],
+        ["TUV","26 km²"],
+        ["MHL","181 km²"],
+        ["PLW","444 km²"],
+        ["FSM","701 km²"],
+        ["TON","749 km²"],
+        ["KIR","811 km²"],
+        ["WSM","2,934 km²"],
+        ["VUT","12,281 km²"],
+        ["FJI","18,333 km²"],
+        ["SLB","28,230 km²"],
+        ["PNG","452,860 km²"]
+      ]
+    },
+    {
+      "level": 3,
+      "prompt": "with the most national parks",
+      "source": "World Population Review",
+      "ranking": [
+        ["AUS","685"],
+        ["THA","156"],
+        ["IND","116"],
+        ["BRA","75"],
+        ["MEX","67"],
+        ["RUS","64"],
+        ["USA","61"],
+        ["COL","60"],
+        ["IDN","56"],
+        ["TUR","50"],
+        ["ISR","49"],
+        ["UKR","48"],
+        ["CAN","47"],
+        ["NOR","47"],
+        ["VEN","46"],
+        ["CHL","46"],
+        ["FIN","40"],
+        ["BHS","40"],
+        ["ARG","37"],
+        ["PHL","36"]
+      ]
+    },
+    {
+      "level": 4,
+      "prompt": "that ranks highest in the global peace index",
+      "source": "Global Peace Index",
+      "ranking": [
+        ["ISL","1.161"],
+        ["NZL","1.343"],
+        ["CHE","1.363"],
+        ["SVN","1.369"],
+        ["IRL","1.371"],
+        ["AUT","1.421"],
+        ["PRT","1.427"],
+        ["SGP","1.435"],
+        ["FIN","1.478"],
+        ["JPN","1.489"],
+        ["DNK","1.504"],
+        ["MYS","1.513"],
+        ["CZE","1.517"],
+        ["CAN","1.525"],
+        ["HUN","1.538"],
+        ["BTN","1.546"],
+        ["NLD","1.566"],
+        ["MUS","1.586"],
+        ["LVA","1.589"],
+        ["AUS","1.602"]
+      ]
+    },
+    {
+      "level": 5,
+      "prompt": "with the highest average elevation",
+      "source": "World Atlas",
+      "ranking": [
+        ["BTN","10,761 ft"],
+        ["NPL","10,712 ft"],
+        ["TJK","10,453 ft"],
+        ["KGZ","9,803 ft"],
+        ["LSO","7,090 ft"],
+        ["AND","6,549 ft"],
+        ["AFG","6,181 ft"],
+        ["CHL","6,138 ft"],
+        ["CHN","6,037 ft"],
+        ["ARM","5,879 ft"],
+        ["RWA","5,243 ft"],
+        ["MNG","5,184 ft"],
+        ["PER","5,102 ft"],
+        ["BDI","4,934 ft"],
+        ["GEO","4,698 ft"],
+        ["CHE","4,429 ft"],
+        ["ETH","4,364 ft"],
+        ["IRN","4,281 ft"],
+        ["LBN","4,101 ft"],
+        ["BOL","3,911 ft"]
+      ]
+    }
+  ]
+}
