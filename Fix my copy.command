@@ -17,6 +17,21 @@ if ! command -v git >/dev/null 2>&1; then
   exit 1
 fi
 
+# This only means anything inside the project folder. Run from anywhere else and every git
+# command below would quietly fail while still reporting success.
+if [ ! -f package.json ] || [ ! -d src/data ] || ! git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+  echo "  This file needs to live in the Top of the World project folder -"
+  echo "  the one containing \"Write questions\" - and be double-clicked there."
+  echo
+  echo "  Right now it is in:"
+  echo "      $(pwd)"
+  echo
+  echo "  Move it next to \"Write questions\" and double-click it again."
+  echo
+  read -r -p "  Press return to close." _
+  exit 1
+fi
+
 BACKUP="rescued-questions/$(date +%Y%m%d-%H%M%S)"
 echo "  1. Copying everything in src/data to $BACKUP"
 mkdir -p "$BACKUP"
@@ -32,10 +47,9 @@ git fetch origin
 git reset --hard origin/main >/dev/null 2>&1
 
 echo "  4. Putting your unpublished questions back"
-if [ -d "$BACKUP/inbox" ]; then
-  mkdir -p src/data/inbox
-  cp -R "$BACKUP/inbox/." src/data/inbox/ 2>/dev/null || true
-fi
+# Only the ones that have not already gone live - putting a published set back would
+# schedule the same questions a second time.
+node scripts/restore-inbox.mjs "$BACKUP"
 
 echo
 echo "  Done. This copy is on \"$(git rev-parse --abbrev-ref HEAD)\" and matches GitHub again."
