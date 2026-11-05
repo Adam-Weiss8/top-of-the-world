@@ -112,7 +112,7 @@
     },
     {
       "level": 5,
-      "prompt": "highest obesity rates",
+      "prompt": "with the highest obesity rates",
       "source": "https://en.wikipedia.org/wiki/List_of_countries_by_obesity_rate",
       "ranking": [
         ["TON","72.3%"],
