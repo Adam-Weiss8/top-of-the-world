@@ -14,24 +14,32 @@ import {
   TIER_EMOJI,
   QUESTIONS_PER_DAY,
   MAX_TOTAL,
+  ARCHIVE_FIRST_DAY,
+  isArchive,
+  requestedDay,
 } from './daily.js';
 
 const $ = (id) => document.getElementById(id);
 
 // In dev, ?day=N previews a queued day and ?set=<id> previews one that hasn't been scheduled
 // yet (both from the admin page), neither of which touches saved progress.
+//add ability to open archived days from calendar
 const params = import.meta.env.DEV ? new URLSearchParams(location.search) : new URLSearchParams();
-const preview = params.get('day');
-const previewSet = params.get('set');
-const key = preview !== null ? dayDate(Number(preview)) : todayKey();
+const requested = requestedDay();                
+const previewSet = params.get('set');            
+const preview = import.meta.env.DEV && (requested !== null || previewSet !== null);
+const archive = !preview && requested !== null;   // tag for archive mode
+const key = requested !== null ? dayDate(requested) : todayKey();
 const number = puzzleNumber(key);
 let { questions, author } = puzzleFor(key);
-const storageKey = preview !== null || previewSet ? null : `totw2:${key}`;
+const storageKey = preview ? null : `totw2:${key}`;
 const dateLabel = new Date(`${key}T12:00:00`).toLocaleDateString('en-GB', {
   day: 'numeric',
   month: 'short',
   year: 'numeric',
 });
+
+
 
 // answers: [{ code, points, rank }], one per question answered so far
 let answers = load();
@@ -499,7 +507,8 @@ function shareText() {
 function shareLink() {
   const host = location.host.replace(/^www\./, '');
   const path = location.pathname.replace(/\/$/, '');
-  return host === 'topoftheworld.fun' ? `www.${host}${path}` : `${host}${path}`;
+  const base = host === 'topoftheworld.fun' ? `www.${host}${path}` : `${host}${path}`;
+  return archive ? `${base}?day=${requested}` : base;
 }
 
 async function share() {
@@ -545,6 +554,10 @@ function toast(message) {
 
 let countdownTimer;
 function tickCountdown() {
+  if (archive){
+    $('countdown').innerHTML = '<a href="./">Back to today\'s climb</a>';
+    return;
+  }
   clearTimeout(countdownTimer);
   const now = new Date();
   const midnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
@@ -558,6 +571,51 @@ function tickCountdown() {
   countdownTimer = setTimeout(tickCountdown, 1000);
 }
 
+// ---------- archive ----------
+
+const today = puzzleNumber(todayKey());
+const monthOf = (d) => ({ year: d.getFullYear(), month: d.getMonth() });
+const monthIndex = ({year,month}) => year * 12 + month;
+const firstMonth = monthOf(new Date(`${dayDate(ARCHIVE_FIRST_DAY)}T12:00:00`));
+const thisMonth = monthOf(new Date());
+let shown = thisMonth;
+
+function renderCalendar() {
+  const first = new Date(shown.year, shown.month, 1);
+  const daysInMonth = new Date(shown.year, shown.month + 1, 0).getDate();
+  const lead = (first.getDay() + 6) % 7; // Mon=0, Sun=6
+  $('cal-month').textContent = first.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' });
+  $('cal-prev').disabled = monthIndex(shown) <= monthIndex(firstMonth);
+  $('cal-next').disabled = monthIndex(shown) >= monthIndex(thisMonth);
+  const cells = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((d) => `<span class="cal-head">${d}</span>`);
+  for (let i =0; i<lead;i++) cells.push('<span class="cal-day blank"></span>');
+  for (let d = 1; d <= daysInMonth; d++) {
+    const n = puzzleNumber(todayKey(new Date(shown.year, shown.month, d)))
+if (n === today) cells.push(`<a class="cal-day today" href="./" aria-current="date" title="Today's climb">${d}</a>`);
+    else if (isArchive(n, today)) cells.push(`<a class="cal-day open" href="?day=${n}" title="Climb #${n}">${d}</a>`);
+    else cells.push(`<span class="cal-day">${d}</span>`);
+  }
+  $('cal-grid').innerHTML = cells.join('');
+}
+
+const stepMonth = (dir) => {
+  shown = monthOf(new Date(shown.year, shown.month + dir, 1));
+  renderCalendar();
+};
+
+const openCalendar = () => {
+  shown = thisMonth;
+  renderCalendar();
+  $('calendar').hidden = false;
+}
+
+const closeCalendar = () => {$('calendar').hidden = true;}
+$('play-archived').addEventListener('click', openCalendar);
+$('cal-close').addEventListener('click', closeCalendar);
+$('cal-prev').addEventListener('click', () => stepMonth(-1));
+$('cal-next').addEventListener('click', () => stepMonth(1));
+$('calendar').addEventListener('click', (e) => e.target === e.currentTarget && closeCalendar());
+document.addEventListener('keydown', (e) => e.key === 'Escape' && !$('calendar').hidden && closeCalendar());
 // ---------- wiring ----------
 
 afterJourney = () => (answers.length < QUESTIONS_PER_DAY ? showQuestion() : showRecap());

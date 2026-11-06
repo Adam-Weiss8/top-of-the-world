@@ -4,6 +4,8 @@ import { dayNumber, isPlayable, QUESTIONS_PER_DAY } from './queue.js';
 export { QUESTIONS_PER_DAY };
 export const MAX_POINTS = 200;
 export const MAX_TOTAL = QUESTIONS_PER_DAY * MAX_POINTS;
+export const ARCHIVE_FIRST_DAY = 1; 
+
 
 /** Local calendar date as YYYY-MM-DD, so the puzzle flips at the player's midnight. */
 export function todayKey(date = new Date()) {
@@ -36,6 +38,22 @@ export function puzzleFor(key) {
   return { questions: archiveMix(n), author: null };
 }
 
+export function isArchive(day, today = dayNumber(todayKey())) {
+  return day >= ARCHIVE_FIRST_DAY && day < today && isPlayable(DAYS.get(day));
+}
+
+export function requestedDay(search = location.search) {
+  const param = new URLSearchParams(search).get('day');
+  if (param === null || param === '') return null;
+  const day = Number(param);
+  if (!Number.isInteger(day))return null;
+  if ( import.meta.env.DEV) return day;
+
+  if (isArchive(day)) return day;
+
+  return null;
+}
+
 function archiveMix(n) {
 
   const playable = [...DAYS.values()].filter(isPlayable);
@@ -50,6 +68,8 @@ function archiveMix(n) {
   }
   return picked;
 }
+
+
 
 // Points by rank for a full 20-answer list: steep at the top, then roughly 8 per rank.
 const CURVE = [200, 180, 165, 150, 138, 128, 118, 108, 99, 90, 82, 74, 66, 58, 50, 42, 34, 26, 18, 10];
