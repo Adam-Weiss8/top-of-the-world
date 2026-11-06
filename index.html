@@ -34,6 +34,9 @@
         </div>
       </div>
       <div class="status">
+          <button class="archive-button" id="play-archived" title="Play a past climb">
+            <span class="archive-icon" aria-hidden="true">📅</span><span class="archive-text">Play archived</span>
+          </button>
         <ol class="dots" id="dots" aria-label="Questions"></ol>
         <span class="altitude-readout" id="altitude-readout" title="Altitude">0 m</span>
       </div>
@@ -137,6 +140,18 @@
           <p class="source" id="source"></p>
         </div>
         <p class="next-puzzle" id="countdown"></p>
+      </section>
+      <section class="overlay" id="calendar" hidden>
+        <div class="panel">
+         <p class="eyebrow blaze">Past climbs</p>
+         <div class="cal-bar">
+          <button class="link-button" id="cal-prev" aria-label="Earlier month">◀</button>
+          <p class="cal-month" id="cal-month"></p>
+          <button class="link-button" id="cal-next" aria-label="Later month">▶</button>
+         </div>
+          <div class="cal-grid" id="cal-grid"></div>
+          <button class="link-button" id="cal-close">Close</button>
+        </div>
       </section>
     </main>
 
