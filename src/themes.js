@@ -11,8 +11,9 @@
 
 import { dayDate } from './queue.js';
 import { halloween } from './themes/halloween.js';
+import { thanksgiving } from './themes/thanksgiving.js';
 
-const THEMES = [halloween];
+const THEMES = [halloween, thanksgiving];
 
 const DEFAULT = { name: 'default', themeColor: '#eef1ea', map: {}, sky: null, art: {} };
 

@@ -74,6 +74,67 @@
   filter: invert(1) hue-rotate(180deg);
 }
 
+/* ---------- Thanksgiving, 23–30 November ----------
+   Set by src/themes.js. This one stays a light theme, which is why it is a fraction of the
+   size of the block above: --ink only warms from navy to brown, so nothing needs its contrast
+   rescued, and the map attribution, the overlay tint and the gold tier text all keep working
+   untouched. --sign stays bright on purpose — it carries dark text on the signs AND on the
+   tier badges, so a deep burnt orange there would have cost a pile of overrides to repair. */
+:root[data-theme='thanksgiving'] {
+  --paper: #f6edda;
+  --card: #fffaf1;
+  --ink: #4a3321;
+  --on-accent: #4a3321;
+  --muted: #8a7256;
+  --line: #d8c4a4;
+  --glacier: #e8d8b8;
+  --sign: #e3972c;
+  --blaze: #a32b22;
+  --alpenglow: #e8a06a;
+
+  --sign-off: #ddd0b8;
+  --tag-bg: rgba(74, 51, 33, 0.8);
+  --poster-sky-top: #9ab0cf;
+  --poster-sky-bottom: #f9cd8c;
+}
+
+/* The turkeys that replace the jets are the one bit of themed art that needs motion of its
+   own: a plane is believable as a rigid shape sliding across the sky, a bird is not. Only
+   the `tg-` classes in src/themes/thanksgiving.js use these, so the whole theme still comes
+   out together. The flight paths stay journey.js's — these move parts within the bird.
+
+   All three animate the individual `rotate`/`translate` properties rather than the
+   `transform` shorthand, because the artwork positions itself with SVG transform attributes
+   and the shorthand would overwrite them. The global prefers-reduced-motion rule at the
+   bottom of this file switches the lot off. */
+.tg-wing {
+  transform-box: fill-box;
+  transform-origin: right center; /* the shoulder, where the wing meets the body */
+  animation: turkey-flap 0.42s ease-in-out infinite alternate;
+}
+@keyframes turkey-flap {
+  from { rotate: -17deg; }
+  to { rotate: 24deg; }
+}
+/* The body rides the downstroke. Same duration as the flap, so the two stay locked. */
+.tg-bob {
+  animation: turkey-bob 0.42s ease-in-out infinite alternate;
+}
+@keyframes turkey-bob {
+  from { translate: 0 1.5px; }
+  to { translate: 0 -1.5px; }
+}
+/* Loose feathers tumbling in the wake, where the jet's contrail used to be. */
+.tg-feather {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: turkey-feather 3.2s ease-in-out infinite alternate;
+}
+@keyframes turkey-feather {
+  from { translate: 0 -2px; rotate: -14deg; }
+  to { translate: 5px 8px; rotate: 20deg; }
+}
+
 * {
   box-sizing: border-box;
 }
