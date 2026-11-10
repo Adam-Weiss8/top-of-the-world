@@ -282,6 +282,27 @@ h3 {
   letter-spacing: 0.08em;
 }
 
+.archive-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  border: 1.5px solid var(--ink);
+  border-radius: 3px;
+  background: var(--paper);
+  color: var(--ink);
+  font: 700 0.8rem/1 var(--display);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+@media (hover: hover) {
+  .archive-button:hover {
+    background: var(--sign);
+    color: var(--on-accent);
+  }
+}
+
 .status {
   display: flex;
   align-items: center;
@@ -794,6 +815,12 @@ h3 {
   .sr-country { font-size: 1.9rem; }
   .sr-points { font-size: 4.4rem; }
   .sr-label { font-size: 1.35rem; }
+  .archive-text {
+  display: none;
+}
+.archive-button {
+  padding: 5px 7px;
+}
 }
 
 /* ---------- journey (full-screen climb) ---------- */
@@ -1127,6 +1154,68 @@ h3 {
   background: var(--sign);
   color: var(--on-accent);
 }
+
+/* ---------- archive ---------- */
+
+.cal-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 6px 0 10px;
+}
+.cal-month {
+  font: 800 1.3rem/1 var(--display);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.link-button:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+.cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+  margin-bottom: 12px;
+}
+.cal-head {
+  padding: 4px 0;
+  font: 700 0.75rem/1 var(--display);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.cal-day {
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  border-radius: 3px;
+  font: 700 0.95rem/1 var(--display);
+  color: var(--muted);
+}
+.cal-day.blank {
+  visibility: hidden;
+}
+.cal-day.open {
+  background: var(--sign);
+  color: var(--on-accent);
+  border: 1.5px solid var(--ink);
+  text-decoration: none;
+}
+@media (hover: hover) {
+  .cal-day.open:hover,
+    .cal-day.today:hover {
+    transform: translate(-1px, -1px);
+    box-shadow: 2px 2px 0 var(--ink);
+  }
+}
+.cal-day.today {
+  color: var(--ink);
+  outline: 2px solid var(--blaze);
+  outline-offset: -2px;
+  text-decoration: none;
+}
+
 
 /* ---------- recap ---------- */
 
