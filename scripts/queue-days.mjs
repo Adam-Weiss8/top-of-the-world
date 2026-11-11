@@ -9,8 +9,11 @@
 //
 // Two rules keep the schedule stable:
 //   - oldest set first, so days air roughly in the order they were written
-//   - never assign a day that has already been played, so a set pushed late is appended rather
-//     than dropped in front of a puzzle someone has already seen
+//   - never assign a day that has already been played, so a set pushed late goes into the
+//     earliest free day still ahead rather than in front of a puzzle someone has already seen
+//
+// "Today" is the writers' today, not the runner's: see the TZ on the scheduling step in
+// .github/workflows/deploy.yml for why that distinction cost a skipped day.
 import { readdir, readFile, writeFile, unlink, mkdir } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { validateDay, formatDay, fileName, dayNumber, dayDate } from '../src/queue.js';
@@ -43,9 +46,18 @@ if (!pending.length) {
 }
 
 // The first slot that is both free and still in the future.
-let next = Math.max(today, ...(taken.size ? [...taken] : [today])) + 1;
+//
+// Starting at tomorrow rather than after the highest day already queued is the part that
+// matters: it means a hole in the schedule gets filled by the next set somebody writes,
+// instead of staying empty for good. Holes do happen — a run landing just after midnight on
+// the runner's clock used to skip a day — and any day without questions falls back to a
+// recycled archive mix, so an unfilled one is something players actually notice.
+//
+// `next` only ever moves forward, so several sets scheduled in the same run still land on
+// consecutive days, and nothing can ever be assigned to today or earlier.
+let next = today + 1;
 const freeSlot = () => {
-  while (taken.has(next) || next <= today) next++;
+  while (taken.has(next)) next++;
   return next;
 };
 

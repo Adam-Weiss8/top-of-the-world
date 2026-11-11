@@ -44,6 +44,13 @@ jobs:
       - run: npm ci
 
       - name: Schedule any newly written days
+        # Runners keep UTC, which runs ahead of the people writing the questions for the last
+        # few hours of every evening. A set published at 22:26 Eastern arrived here at 03:26
+        # UTC the next day, so the scheduler thought tomorrow was already today and assigned
+        # the day after instead — leaving a hole that showed up in the admin as an empty day.
+        # Anchoring to the writers' clock keeps "tomorrow" meaning what they think it means.
+        env:
+          TZ: America/New_York
         run: |
           npm run queue
           if [ -z "$(git status --porcelain -- src/data)" ]; then
